@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: horse_racing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD}@db:5432/horse_racing
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 10080
+      ALLOWED_ORIGINS: https://goracing.ai,https://www.goracing.ai
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8000
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        GEMINI_API_KEY: ${GEMINI_API_KEY}
+        GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - redis
+    environment:
+      BACKEND_URL: http://backend:8000
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      REDIS_URL: redis://redis:6379
+    expose:
+      - "3000"
+    networks:
+      - default
+      - topx
+
+volumes:
+  pgdata:
+
+networks:
+  topx:
+    external: true
+    name: topxhk_app-network
