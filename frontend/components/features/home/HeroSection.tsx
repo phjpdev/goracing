@@ -30,6 +30,14 @@ export function HeroSection() {
                   className="h-full w-full object-cover object-[70%_50%] lg:object-center [transform:rotateY(180deg)]"
                   priority
                 />
+                <video
+                  src="/assets/home-animation.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:object-center [transform:rotateY(180deg)] mix-blend-screen"
+                />
                 <div
                   className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
                   style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 28%, transparent 55%)" }}
