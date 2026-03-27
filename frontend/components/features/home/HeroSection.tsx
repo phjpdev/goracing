@@ -12,16 +12,13 @@ export function HeroSection() {
   const { t } = useLanguage();
 
   return (
-    <div
-      className="min-w-0 overflow-x-hidden relative"
-      style={{ background: "linear-gradient(152.57deg, #282828 15.06%, #141414 60.23%)" }}
-    >
-      <main className="bg-black">
-        <div className="relative mx-auto w-full max-w-[1440px] overflow-visible px-0 lg:px-8">
-          <div className="relative grid min-h-[55vh] lg:min-h-0 h-auto lg:h-[700px] w-full gap-8 lg:gap-12 border-t-0 lg:border-t border-r border-b border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.9)] grid-cols-1 lg:grid-cols-[1fr_1000px] rounded-b-none lg:rounded-b-[32px] py-0 lg:py-0">
+    <div className="min-w-0 overflow-x-hidden relative">
+      <main className="relative">
+        <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden px-0 lg:px-10">
+          <div className="relative grid min-h-[100svh] w-full grid-cols-1 lg:grid-cols-2">
             {/* Hero image */}
-            <section className="absolute inset-0 lg:relative lg:flex justify-end overflow-visible order-2 min-h-0">
-              <div className="relative h-full w-full overflow-hidden rounded-b-none lg:rounded-b-[32px]">
+            <section className="absolute inset-0 lg:relative lg:flex items-stretch overflow-hidden order-2">
+              <div className="relative h-full w-full overflow-hidden">
                 <Image
                   src="/assets/hero-image.png"
                   alt="Horse racing"
@@ -30,6 +27,7 @@ export function HeroSection() {
                   className="h-full w-full object-cover object-[70%_50%] lg:object-center [transform:rotateY(180deg)]"
                   priority
                 />
+                {/* Mobile gradient overlays */}
                 <div
                   className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
                   style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 28%, transparent 55%)" }}
@@ -40,48 +38,57 @@ export function HeroSection() {
                   style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 38%, transparent 72%)" }}
                   aria-hidden
                 />
+                {/* Desktop left fade */}
                 <div
-                  className="pointer-events-none absolute inset-0 z-[1] hidden bg-[linear-gradient(90deg,rgba(5,6,8,0.98)_0%,rgba(5,6,8,0.8)_22%,rgba(5,6,8,0)_55%)] lg:block"
+                  className="pointer-events-none absolute inset-0 z-[1] hidden lg:block"
+                  style={{ background: "linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 30%, transparent 60%)" }}
+                  aria-hidden
+                />
+                {/* Desktop bottom fade */}
+                <div
+                  className="pointer-events-none absolute inset-0 z-[1] hidden lg:block"
+                  style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 30%)" }}
                   aria-hidden
                 />
               </div>
             </section>
 
-            <section className="relative z-10 flex flex-col justify-end gap-5 order-1 px-4 pt-[38vh] min-h-[55vh] pb-6 lg:justify-center lg:pt-0 lg:px-0 lg:min-h-0 lg:pb-0">
-              <h1 className="text-[50px] leading-[1.2] font-medium tracking-[0] text-white lg:text-[56px] lg:leading-[1.4] lg:whitespace-nowrap">
+            {/* Hero text */}
+            <section className="relative z-10 flex flex-col justify-end gap-6 order-1 px-5 pt-[40vh] min-h-[100svh] pb-8 lg:justify-center lg:pt-0 lg:min-h-0 lg:pb-0 lg:pl-2 lg:pr-12">
+              <h1 className="text-[42px] leading-[1.15] font-semibold tracking-[-0.01em] text-white sm:text-[50px] lg:text-[56px] lg:leading-[1.2] lg:whitespace-nowrap">
                 {t.hero.title}
               </h1>
 
-              <p className="max-w-[430px] font-inter text-[16px] font-light leading-[1.4] tracking-[0.01em] text-white lg:text-[#B3B3B3]">
+              <p className="max-w-[440px] font-inter text-[15px] font-light leading-[1.6] tracking-[0.01em] text-white/80 lg:text-[17px] lg:text-white/60">
                 {t.hero.description}
               </p>
 
-              <div className="mt-6 flex flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4">
+              <div className="mt-4 flex flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4">
                 {!auth?.authenticated && (
                   <PrimaryLink href={ROUTES.LOGIN}>{t.hero.login}</PrimaryLink>
                 )}
                 <Link
                   href={ROUTES.MATCHES}
                   prefetch={false}
-                  className="inline-flex h-[54px] items-center justify-center rounded-full border border-white/50 bg-black/40 lg:bg-transparent px-6 py-[17px] font-inter text-[16px] font-normal leading-[1.4] tracking-[0] text-white lg:border-white/40 lg:px-8 no-underline"
+                  className="inline-flex h-[52px] items-center justify-center rounded-full border border-white/30 bg-white/5 px-7 font-inter text-[15px] font-normal leading-[1.4] text-white backdrop-blur-sm transition-colors hover:bg-white/10 no-underline"
                 >
                   {t.hero.viewMatches}
                 </Link>
               </div>
 
               {/* Stats: desktop only */}
-              <div className="mt-2 hidden lg:block">
-                <div className="h-px w-full border-t border-transparent [border-image:linear-gradient(90deg,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0)_100%)_1]" />
-                <div className="mt-6 flex flex-wrap gap-6 sm:gap-10 text-center">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-sans text-[26px] font-semibold leading-[1.4] tracking-[0.01em] text-white">15</span>
-                    <span className="whitespace-nowrap font-inter text-[14px] font-light leading-[1.4] tracking-[0.01em] text-[#707687]">
+              <div className="mt-8 hidden lg:block">
+                <div className="h-px w-full max-w-[320px] bg-gradient-to-r from-white/30 to-transparent" />
+                <div className="mt-5 flex gap-12">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-sans text-[28px] font-bold leading-[1.3] tracking-[-0.01em] text-white">15</span>
+                    <span className="whitespace-nowrap font-inter text-[13px] font-light leading-[1.4] tracking-[0.02em] text-white/40 uppercase">
                       {t.hero.liveRacesToday}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-sans text-[26px] font-semibold leading-[1.4] tracking-[0.01em] text-white">88.3%</span>
-                    <span className="whitespace-nowrap font-inter text-[14px] font-light leading-[1.4] tracking-[0.01em] text-[#707687]">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-sans text-[28px] font-bold leading-[1.3] tracking-[-0.01em] text-white">88.3%</span>
+                    <span className="whitespace-nowrap font-inter text-[13px] font-light leading-[1.4] tracking-[0.02em] text-white/40 uppercase">
                       {t.hero.modelAccuracy}
                     </span>
                   </div>
@@ -92,12 +99,12 @@ export function HeroSection() {
             {/* Decorative ellipses – desktop only */}
             <div
               className="pointer-events-none absolute z-10 rounded-full hidden lg:block"
-              style={{ width: "600px", height: "50px", right: "100px", top: "0", background: "rgba(255, 255, 255, 0.8)", filter: "blur(50px)", transform: "rotate(-25deg)" }}
+              style={{ width: "500px", height: "40px", right: "80px", top: "60px", background: "rgba(255, 255, 255, 0.6)", filter: "blur(60px)", transform: "rotate(-25deg)" }}
               aria-hidden
             />
             <div
               className="pointer-events-none absolute z-10 rounded-full hidden lg:block"
-              style={{ width: "500px", height: "80px", right: "200px", top: "300px", background: "rgba(255, 255, 255, 0.8)", filter: "blur(50px)", transform: "rotate(-25deg)" }}
+              style={{ width: "400px", height: "60px", right: "160px", top: "50%", background: "rgba(255, 255, 255, 0.4)", filter: "blur(60px)", transform: "rotate(-25deg)" }}
               aria-hidden
             />
           </div>
@@ -106,17 +113,17 @@ export function HeroSection() {
 
       {/* Mobile-only stats */}
       <section
-        className="lg:hidden w-full pt-5 pb-24 px-4"
-        style={{ background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 50%, #000000 100%)" }}
+        className="lg:hidden w-full pt-6 pb-20 px-5"
+        style={{ background: "linear-gradient(180deg, #111 0%, #000 100%)" }}
       >
-        <div className="grid grid-cols-2 gap-4 max-w-[1360px] mx-auto">
-          <div className="flex flex-col items-center justify-center gap-1 text-center">
-            <span className="font-sans text-[26px] font-semibold leading-[1.4] tracking-[0.01em] text-white">15</span>
-            <span className="font-inter text-[14px] font-light leading-[1.4] tracking-[0.01em] text-white">{t.hero.liveRacesToday}</span>
+        <div className="grid grid-cols-2 gap-6 max-w-[400px] mx-auto">
+          <div className="flex flex-col items-center justify-center gap-0.5 text-center">
+            <span className="font-sans text-[28px] font-bold leading-[1.3] text-white">15</span>
+            <span className="font-inter text-[13px] font-light leading-[1.4] tracking-[0.02em] text-white/50 uppercase">{t.hero.liveRacesToday}</span>
           </div>
-          <div className="flex flex-col items-center justify-center gap-1 text-center">
-            <span className="font-sans text-[26px] font-semibold leading-[1.4] tracking-[0.01em] text-white">88.3%</span>
-            <span className="font-inter text-[14px] font-light leading-[1.4] tracking-[0.01em] text-white">{t.hero.modelAccuracy}</span>
+          <div className="flex flex-col items-center justify-center gap-0.5 text-center">
+            <span className="font-sans text-[28px] font-bold leading-[1.3] text-white">88.3%</span>
+            <span className="font-inter text-[13px] font-light leading-[1.4] tracking-[0.02em] text-white/50 uppercase">{t.hero.modelAccuracy}</span>
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 const FEATURE_CARD_CLASS =
-  "flex min-h-[301px] h-auto flex-1 flex-row items-center gap-6 rounded-[12px] border border-[#3B3B3B] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.05)_100%)] px-5 shadow-[-20px_24px_74px_rgba(255,255,255,0.05)]";
+  "group flex h-auto flex-col rounded-[16px] border border-white/[0.08] bg-white/[0.03] p-6 lg:p-7 transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06]";
 
 const FEATURES = [
   {
@@ -32,29 +32,25 @@ const FEATURES = [
 
 export function FeatureCards() {
   return (
-    <section className="mt-8 sm:mt-12 lg:mt-[60px] w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="mt-10 sm:mt-16 lg:mt-24 w-full max-w-[1360px] mx-auto px-5 sm:px-6 lg:px-10">
       <style>{`
         @keyframes icon-blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.2; }
         }
       `}</style>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-4 lg:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
         {FEATURES.map((feature) => (
           <article key={feature.title} className={FEATURE_CARD_CLASS}>
-            <div className="flex min-h-[262px] w-full max-w-[288px] flex-col items-start gap-4 py-6 lg:py-8">
-              <div className="flex h-11 items-center justify-center" style={{ animation: "icon-blink 2s ease-in-out infinite" }}>
-                <Image src={feature.icon} alt="" width={54} height={44} className="h-11" />
-              </div>
-              <div className="flex min-h-0 w-full flex-col items-start gap-1">
-                <h2 className="w-full max-w-[260px] text-[20px] sm:text-[24px] leading-[1.3] text-white">
-                  {feature.title}
-                </h2>
-                <p className="w-full max-w-[288px] text-[14px] sm:text-[16px] leading-[1.5] tracking-[0.01em] text-[#D3D3D3]">
-                  {feature.description}
-                </p>
-              </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.06] mb-5" style={{ animation: "icon-blink 2s ease-in-out infinite" }}>
+              <Image src={feature.icon} alt="" width={54} height={44} className="h-8 w-auto" />
             </div>
+            <h2 className="text-[18px] sm:text-[20px] font-semibold leading-[1.3] text-white">
+              {feature.title}
+            </h2>
+            <p className="mt-2 text-[14px] sm:text-[15px] leading-[1.6] tracking-[0.01em] text-white/50">
+              {feature.description}
+            </p>
           </article>
         ))}
       </div>

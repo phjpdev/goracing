@@ -53,14 +53,10 @@ export function ParticleCanvas() {
 
     const resize = () => {
       canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
+      canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener("resize", resize);
-
-    // Re-measure on scroll height changes (e.g. content loads)
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(document.body);
 
     // Seed ambient particles across the full page
     const particles = particlesRef.current;
@@ -82,7 +78,7 @@ export function ParticleCanvas() {
     const onMouseMove = (e: MouseEvent) => {
       mouseRef.current = {
         x: e.clientX,
-        y: e.clientY + window.scrollY,
+        y: e.clientY,
         active: true,
       };
     };
@@ -93,7 +89,7 @@ export function ParticleCanvas() {
       const t = e.touches[0];
       mouseRef.current = {
         x: t.clientX,
-        y: t.clientY + window.scrollY,
+        y: t.clientY,
         active: true,
       };
     };
@@ -216,7 +212,6 @@ export function ParticleCanvas() {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchstart", onTouchMove as EventListener);
       window.removeEventListener("touchend", onTouchEnd);
-      resizeObserver.disconnect();
       cancelAnimationFrame(rafRef.current);
       particlesRef.current = [];
     };
@@ -225,7 +220,7 @@ export function ParticleCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none absolute top-0 left-0 w-full"
+      className="pointer-events-none fixed inset-0 w-full h-full"
       style={{ zIndex: 20 }}
     />
   );
