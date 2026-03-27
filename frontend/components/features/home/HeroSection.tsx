@@ -14,28 +14,23 @@ export function HeroSection() {
   return (
     <div className="min-w-0 overflow-x-hidden relative">
       <main className="relative">
-        <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden px-0 lg:px-10">
-          <div className="relative grid min-h-[100svh] w-full grid-cols-1 lg:grid-cols-2">
+        <div className="relative mx-auto w-full max-w-[1360px] overflow-hidden px-5 sm:px-6 lg:px-10">
+          <div className="relative flex flex-col lg:grid lg:h-[75svh] w-full lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             {/* Hero image */}
-            <section className="absolute inset-0 lg:relative lg:flex items-stretch overflow-hidden order-2">
+            <section className="relative h-[45svh] lg:h-auto lg:flex items-stretch overflow-hidden order-1 lg:order-2">
               <div className="relative h-full w-full overflow-hidden">
                 <Image
                   src="/assets/hero-image.png"
                   alt="Horse racing"
                   width={1066}
                   height={1200}
-                  className="h-full w-full object-cover object-[70%_50%] lg:object-center [transform:rotateY(180deg)]"
+                  className="h-full w-full object-cover object-[70%_30%] lg:object-center [transform:rotateY(180deg)]"
                   priority
                 />
-                {/* Mobile gradient overlays */}
+                {/* Mobile bottom fade */}
                 <div
                   className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
-                  style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 28%, transparent 55%)" }}
-                  aria-hidden
-                />
-                <div
-                  className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
-                  style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 38%, transparent 72%)" }}
+                  style={{ background: "linear-gradient(0deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 25%, transparent 50%)" }}
                   aria-hidden
                 />
                 {/* Desktop left fade */}
@@ -54,23 +49,23 @@ export function HeroSection() {
             </section>
 
             {/* Hero text */}
-            <section className="relative z-10 flex flex-col justify-end gap-6 order-1 px-5 pt-[40vh] min-h-[100svh] pb-8 lg:justify-center lg:pt-0 lg:min-h-0 lg:pb-0 lg:pl-2 lg:pr-12">
-              <h1 className="text-[42px] leading-[1.15] font-semibold tracking-[-0.01em] text-white sm:text-[50px] lg:text-[56px] lg:leading-[1.2] lg:whitespace-nowrap">
+            <section className="relative z-10 flex flex-col gap-5 order-2 lg:order-1 px-5 pt-6 pb-8 lg:justify-center lg:pt-0 lg:pb-0 lg:pl-2 lg:pr-12">
+              <h1 className="text-[32px] leading-[1.15] font-semibold tracking-[-0.01em] text-white sm:text-[42px] lg:text-[56px] lg:leading-[1.2] lg:whitespace-nowrap">
                 {t.hero.title}
               </h1>
 
-              <p className="max-w-[440px] font-inter text-[15px] font-light leading-[1.6] tracking-[0.01em] text-white/80 lg:text-[17px] lg:text-white/60">
+              <p className="max-w-[440px] font-inter text-[14px] font-light leading-[1.6] tracking-[0.01em] text-white/70 sm:text-[15px] lg:text-[17px] lg:text-white/60">
                 {t.hero.description}
               </p>
 
-              <div className="mt-4 flex flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4">
+              <div className="mt-2 lg:mt-4 flex flex-row flex-wrap items-center justify-start gap-3 sm:gap-4">
                 {!auth?.authenticated && (
                   <PrimaryLink href={ROUTES.LOGIN}>{t.hero.login}</PrimaryLink>
                 )}
                 <Link
                   href={ROUTES.MATCHES}
                   prefetch={false}
-                  className="inline-flex h-[52px] items-center justify-center rounded-full border border-white/30 bg-white/5 px-7 font-inter text-[15px] font-normal leading-[1.4] text-white backdrop-blur-sm transition-colors hover:bg-white/10 no-underline"
+                  className="inline-flex h-[48px] lg:h-[52px] items-center justify-center rounded-full border border-white/30 bg-white/5 px-6 lg:px-7 font-inter text-[14px] lg:text-[15px] font-normal leading-[1.4] text-white backdrop-blur-sm transition-colors hover:bg-white/10 no-underline"
                 >
                   {t.hero.viewMatches}
                 </Link>
