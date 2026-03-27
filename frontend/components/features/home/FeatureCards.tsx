@@ -33,11 +33,17 @@ const FEATURES = [
 export function FeatureCards() {
   return (
     <section className="mt-8 sm:mt-12 lg:mt-[60px] w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+      <style>{`
+        @keyframes icon-blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.2; }
+        }
+      `}</style>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-4 lg:gap-4">
         {FEATURES.map((feature) => (
           <article key={feature.title} className={FEATURE_CARD_CLASS}>
             <div className="flex min-h-[262px] w-full max-w-[288px] flex-col items-start gap-4 py-6 lg:py-8">
-              <div className="flex h-11 items-center justify-center">
+              <div className="flex h-11 items-center justify-center" style={{ animation: "icon-blink 2s ease-in-out infinite" }}>
                 <Image src={feature.icon} alt="" width={54} height={44} className="h-11" />
               </div>
               <div className="flex min-h-0 w-full flex-col items-start gap-1">
