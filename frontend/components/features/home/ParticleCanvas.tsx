@@ -38,7 +38,7 @@ export function ParticleCanvas() {
       y: y + (Math.random() - 0.5) * spread,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed - (isTrail ? 0.3 : 0),
-      size: isTrail ? Math.random() * 2.5 + 1 : Math.random() * 2 + 0.8,
+      size: isTrail ? Math.random() * 1.5 + 0.5 : Math.random() * 1.2 + 0.4,
       opacity: isTrail ? Math.random() * 0.8 + 0.4 : Math.random() * 0.5 + 0.15,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       life: 0,
@@ -66,7 +66,7 @@ export function ParticleCanvas() {
 
     // Seed ambient particles
     const particles = particlesRef.current;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 40; i++) {
       particles.push(createParticle(
         Math.random() * canvas.width,
         Math.random() * canvas.height,
@@ -108,8 +108,8 @@ export function ParticleCanvas() {
       const h = canvas.height;
 
       // Spawn trail particles near cursor
-      if (mouse.active && time - lastSpawnRef.current > 20) {
-        for (let i = 0; i < 4; i++) {
+      if (mouse.active && time - lastSpawnRef.current > 50) {
+        for (let i = 0; i < 2; i++) {
           particles.push(createParticle(mouse.x, mouse.y, 40, true));
         }
         lastSpawnRef.current = time;
@@ -121,7 +121,7 @@ export function ParticleCanvas() {
         p.life++;
 
         if (p.life > p.maxLife) {
-          if (particles.length < 500) {
+          if (particles.length < 150) {
             // Respawn as ambient
             p.x = Math.random() * w;
             p.y = Math.random() * h;
@@ -130,7 +130,7 @@ export function ParticleCanvas() {
             p.life = 0;
             p.maxLife = Math.random() * 200 + 100;
             p.opacity = Math.random() * 0.5 + 0.15;
-            p.size = Math.random() * 2 + 0.8;
+            p.size = Math.random() * 1.2 + 0.4;
           } else {
             particles.splice(i, 1);
             continue;
