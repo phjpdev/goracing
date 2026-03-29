@@ -15,11 +15,12 @@ interface Particle {
 }
 
 const COLORS = [
-  "120, 180, 255",
-  "80, 140, 255",
-  "160, 200, 255",
-  "200, 220, 255",
-  "100, 160, 255",
+  "100, 180, 255",
+  "60, 130, 255",
+  "140, 200, 255",
+  "180, 220, 255",
+  "80, 160, 255",
+  "200, 230, 255",
 ];
 
 export function ParticleCanvas() {
@@ -29,175 +30,203 @@ export function ParticleCanvas() {
   const rafRef = useRef<number>(0);
   const lastSpawnRef = useRef(0);
 
-  const createParticle = useCallback((x: number, y: number, spread: number): Particle => {
+  const createParticle = useCallback((x: number, y: number, spread: number, isTrail = false): Particle => {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 1.5 + 0.3;
+    const speed = isTrail ? Math.random() * 2 + 0.5 : Math.random() * 0.4 + 0.1;
     return {
       x: x + (Math.random() - 0.5) * spread,
       y: y + (Math.random() - 0.5) * spread,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size: Math.random() * 3 + 1,
-      opacity: Math.random() * 0.7 + 0.3,
+      vy: Math.sin(angle) * speed - (isTrail ? 0.3 : 0),
+      size: isTrail ? Math.random() * 2.5 + 1 : Math.random() * 2 + 0.8,
+      opacity: isTrail ? Math.random() * 0.8 + 0.4 : Math.random() * 0.5 + 0.15,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       life: 0,
-      maxLife: Math.random() * 80 + 40,
+      maxLife: isTrail ? Math.random() * 60 + 30 : Math.random() * 200 + 100,
     };
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const rect = parent.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
     };
     resize();
     window.addEventListener("resize", resize);
+    const resizeObs = new ResizeObserver(resize);
+    resizeObs.observe(parent);
 
-    // Seed ambient particles across the full page
+    // Seed ambient particles
     const particles = particlesRef.current;
-    for (let i = 0; i < 180; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 2.5 + 0.5,
-        opacity: Math.random() * 0.4 + 0.1,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        life: Math.random() * 60,
-        maxLife: Math.random() * 120 + 60,
-      });
+    for (let i = 0; i < 100; i++) {
+      particles.push(createParticle(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height,
+        0,
+      ));
     }
 
-    // Window-level mouse/touch handlers
-    const onMouseMove = (e: MouseEvent) => {
-      mouseRef.current = {
-        x: e.clientX,
-        y: e.clientY,
-        active: true,
-      };
-    };
-    const onMouseLeave = () => {
-      mouseRef.current.active = false;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      const t = e.touches[0];
-      mouseRef.current = {
-        x: t.clientX,
-        y: t.clientY,
-        active: true,
-      };
-    };
-    const onTouchEnd = () => {
-      mouseRef.current.active = false;
+    // Local mouse/touch handlers relative to canvas
+    const getLocalCoords = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect();
+      return { x: clientX - rect.left, y: clientY - rect.top };
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseleave", onMouseLeave);
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchstart", onTouchMove as EventListener, { passive: true });
-    window.addEventListener("touchend", onTouchEnd);
+    const onMouseMove = (e: MouseEvent) => {
+      const pos = getLocalCoords(e.clientX, e.clientY);
+      mouseRef.current = { ...pos, active: true };
+    };
+    const onMouseLeave = () => { mouseRef.current.active = false; };
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      const pos = getLocalCoords(t.clientX, t.clientY);
+      mouseRef.current = { ...pos, active: true };
+    };
+    const onTouchEnd = () => { mouseRef.current.active = false; };
+
+    parent.addEventListener("mousemove", onMouseMove);
+    parent.addEventListener("mouseleave", onMouseLeave);
+    parent.addEventListener("touchmove", onTouchMove, { passive: true });
+    parent.addEventListener("touchstart", onTouchMove as EventListener, { passive: true });
+    parent.addEventListener("touchend", onTouchEnd);
+
+    const CONNECTION_DIST = 120;
+    const MOUSE_RADIUS = 220;
 
     const animate = (time: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       const mouse = mouseRef.current;
+      const w = canvas.width;
+      const h = canvas.height;
 
-      // Spawn particles near cursor
-      if (mouse.active && time - lastSpawnRef.current > 16) {
-        for (let i = 0; i < 3; i++) {
-          particles.push(createParticle(mouse.x, mouse.y, 60));
+      // Spawn trail particles near cursor
+      if (mouse.active && time - lastSpawnRef.current > 20) {
+        for (let i = 0; i < 4; i++) {
+          particles.push(createParticle(mouse.x, mouse.y, 40, true));
         }
         lastSpawnRef.current = time;
       }
 
-      // Update and draw
+      // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life++;
 
         if (p.life > p.maxLife) {
-          if (particles.length < 400) {
-            p.x = Math.random() * canvas.width;
-            p.y = Math.random() * canvas.height;
+          if (particles.length < 500) {
+            // Respawn as ambient
+            p.x = Math.random() * w;
+            p.y = Math.random() * h;
+            p.vx = (Math.random() - 0.5) * 0.3;
+            p.vy = (Math.random() - 0.5) * 0.3;
             p.life = 0;
-            p.maxLife = Math.random() * 120 + 60;
-            p.opacity = Math.random() * 0.4 + 0.1;
+            p.maxLife = Math.random() * 200 + 100;
+            p.opacity = Math.random() * 0.5 + 0.15;
+            p.size = Math.random() * 2 + 0.8;
           } else {
             particles.splice(i, 1);
             continue;
           }
         }
 
-        // Mouse attraction
+        // Mouse interaction: attract + push
         if (mouse.active) {
           const dx = mouse.x - p.x;
           const dy = mouse.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 200 && dist > 1) {
-            const force = 0.02 * (1 - dist / 200);
-            p.vx += (dx / dist) * force;
-            p.vy += (dy / dist) * force;
+          if (dist < MOUSE_RADIUS && dist > 1) {
+            const norm = 1 - dist / MOUSE_RADIUS;
+            // Gentle orbit: attract + perpendicular push
+            const force = 0.025 * norm;
+            p.vx += (dx / dist) * force + (-dy / dist) * force * 0.5;
+            p.vy += (dy / dist) * force + (dx / dist) * force * 0.5;
           }
         }
 
         // Drift
         p.x += p.vx;
         p.y += p.vy;
-        p.vx *= 0.99;
-        p.vy *= 0.99;
+        p.vx *= 0.985;
+        p.vy *= 0.985;
 
-        // Fade based on life
+        // Wrap around edges
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
+      }
+
+      // -- Draw connections (always, not just near cursor) --
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        const lifeRatioA = a.life / a.maxLife;
+        const alphaA = lifeRatioA < 0.1 ? lifeRatioA / 0.1 : lifeRatioA > 0.8 ? (1 - (lifeRatioA - 0.8) / 0.2) : 1;
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const b = particles[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONNECTION_DIST) {
+            const lifeRatioB = b.life / b.maxLife;
+            const alphaB = lifeRatioB < 0.1 ? lifeRatioB / 0.1 : lifeRatioB > 0.8 ? (1 - (lifeRatioB - 0.8) / 0.2) : 1;
+            const proximity = 1 - dist / CONNECTION_DIST;
+
+            // Brighter lines near cursor
+            let boost = 0;
+            if (mouse.active) {
+              const midX = (a.x + b.x) / 2;
+              const midY = (a.y + b.y) / 2;
+              const dMouse = Math.sqrt((midX - mouse.x) ** 2 + (midY - mouse.y) ** 2);
+              if (dMouse < MOUSE_RADIUS) {
+                boost = 0.25 * (1 - dMouse / MOUSE_RADIUS);
+              }
+            }
+
+            const lineAlpha = (0.08 + boost) * proximity * Math.min(alphaA, alphaB);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(120, 190, 255, ${lineAlpha})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // -- Draw particles --
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         const lifeRatio = p.life / p.maxLife;
         const alpha = lifeRatio < 0.1
           ? p.opacity * (lifeRatio / 0.1)
-          : lifeRatio > 0.7
-            ? p.opacity * (1 - (lifeRatio - 0.7) / 0.3)
+          : lifeRatio > 0.75
+            ? p.opacity * (1 - (lifeRatio - 0.75) / 0.25)
             : p.opacity;
 
-        // Draw glow
+        // Outer glow
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+        grad.addColorStop(0, `rgba(${p.color}, ${alpha * 0.4})`);
+        grad.addColorStop(1, `rgba(${p.color}, 0)`);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.color}, ${alpha * 0.15})`;
+        ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
         ctx.fill();
 
-        // Draw core
+        // Core dot
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.color}, ${alpha})`;
         ctx.fill();
-      }
-
-      // Draw connections near cursor
-      if (mouse.active) {
-        for (let i = 0; i < particles.length; i++) {
-          const a = particles[i];
-          const dxM = a.x - mouse.x;
-          const dyM = a.y - mouse.y;
-          const distM = Math.sqrt(dxM * dxM + dyM * dyM);
-          if (distM > 150) continue;
-
-          for (let j = i + 1; j < particles.length; j++) {
-            const b = particles[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 80) {
-              const lineAlpha = 0.15 * (1 - dist / 80) * (1 - distM / 150);
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.strokeStyle = `rgba(120, 180, 255, ${lineAlpha})`;
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
-            }
-          }
-        }
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -207,11 +236,12 @@ export function ParticleCanvas() {
 
     return () => {
       window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseleave", onMouseLeave);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchstart", onTouchMove as EventListener);
-      window.removeEventListener("touchend", onTouchEnd);
+      parent.removeEventListener("mousemove", onMouseMove);
+      parent.removeEventListener("mouseleave", onMouseLeave);
+      parent.removeEventListener("touchmove", onTouchMove);
+      parent.removeEventListener("touchstart", onTouchMove as EventListener);
+      parent.removeEventListener("touchend", onTouchEnd);
+      resizeObs.disconnect();
       cancelAnimationFrame(rafRef.current);
       particlesRef.current = [];
     };
@@ -220,8 +250,7 @@ export function ParticleCanvas() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 w-full h-full"
-      style={{ zIndex: 20 }}
+      className="absolute inset-0 z-[2] w-full h-full"
     />
   );
 }

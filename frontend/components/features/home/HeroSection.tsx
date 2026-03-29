@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PrimaryLink } from "@/components/ui";
+import { ParticleCanvas } from "./ParticleCanvas";
 import { ROUTES } from "@/lib/constants";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -27,6 +28,7 @@ export function HeroSection() {
                   className="h-full w-full object-cover object-[70%_30%] lg:object-center [transform:rotateY(180deg)]"
                   priority
                 />
+                <ParticleCanvas />
                 {/* Mobile bottom fade */}
                 <div
                   className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
