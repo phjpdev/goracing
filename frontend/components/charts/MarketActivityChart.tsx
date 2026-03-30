@@ -1,35 +1,42 @@
-export function MarketActivityChart() {
+type MarketPoint = {
+  winProb: number;
+  odds: number;
+  trend: "dropping" | "drifting" | "stable";
+};
+
+type MarketActivityChartProps = {
+  points?: MarketPoint[];
+};
+
+export function MarketActivityChart({ points }: MarketActivityChartProps) {
   const w = 320;
   const h = 240;
   const pad = { top: 20, right: 20, bottom: 36, left: 40 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
 
-  const xMax = 45;
-  const yMax = 20;
+  // Derive axis bounds from data
+  const data = points && points.length > 0 ? points : defaultPoints;
+  const maxX = Math.ceil(Math.max(...data.map((p) => p.winProb)) / 5) * 5 + 5;
+  const maxY = Math.ceil(Math.max(...data.map((p) => p.odds)) / 5) * 5;
 
-  const points = [
-    { x: 5, y: 8, c: "green", size: 5 },
-    { x: 10, y: 8, c: "green", size: 5 },
-    { x: 15, y: 11, c: "green", size: 5.5 },
-    { x: 20, y: 13, c: "green", size: 5.5 },
-    { x: 25, y: 16, c: "green", size: 6 },
-    { x: 30, y: 16, c: "green", size: 5 },
-    { x: 35, y: 18, c: "red", size: 8 },
-    { x: 35, y: 13, c: "white", size: 4.5 },
-    { x: 40, y: 17, c: "white", size: 5 },
-  ];
+  const sx = (v: number) => pad.left + (v / maxX) * plotW;
+  const sy = (v: number) => pad.top + plotH - (v / maxY) * plotH;
 
-  const sx = (v: number) => pad.left + (v / xMax) * plotW;
-  const sy = (v: number) => pad.top + plotH - (v / yMax) * plotH;
-
-  const xTicks = [5, 10, 15, 20, 25, 30, 35, 40];
-  const yTicks = [0, 5, 10, 15, 20];
+  const xTicks = Array.from({ length: Math.floor(maxX / 5) }, (_, i) => (i + 1) * 5);
+  const yTicks = Array.from({ length: maxY / 5 + 1 }, (_, i) => i * 5);
 
   const colorMap: Record<string, { fill: string; glow: string }> = {
-    green: { fill: "#28E88E", glow: "rgba(40,232,142,0.4)" },
-    red: { fill: "#F43F5E", glow: "rgba(244,63,94,0.4)" },
-    white: { fill: "rgba(180,180,180,0.7)", glow: "rgba(180,180,180,0.2)" },
+    dropping: { fill: "#28E88E", glow: "rgba(40,232,142,0.4)" },
+    drifting: { fill: "#F43F5E", glow: "rgba(244,63,94,0.4)" },
+    stable: { fill: "rgba(180,180,180,0.7)", glow: "rgba(180,180,180,0.2)" },
+  };
+
+  // Size dots based on win probability (higher = bigger)
+  const getSize = (winProb: number) => {
+    const min = 4, max = 7;
+    const ratio = Math.min(winProb / maxX, 1);
+    return min + ratio * (max - min);
   };
 
   return (
@@ -107,27 +114,46 @@ export function MarketActivityChart() {
       </text>
 
       {/* Dot glows */}
-      {points.map((p, i) => (
-        <circle
-          key={`g${i}`}
-          cx={sx(p.x)}
-          cy={sy(p.y)}
-          r={p.size * 1.5}
-          fill={colorMap[p.c].glow}
-          filter="url(#dotGlow)"
-        />
-      ))}
+      {data.map((p, i) => {
+        const s = getSize(p.winProb);
+        return (
+          <circle
+            key={`g${i}`}
+            cx={sx(p.winProb)}
+            cy={sy(p.odds)}
+            r={s * 1.5}
+            fill={colorMap[p.trend].glow}
+            filter="url(#dotGlow)"
+          />
+        );
+      })}
 
       {/* Dots */}
-      {points.map((p, i) => (
-        <circle
-          key={i}
-          cx={sx(p.x)}
-          cy={sy(p.y)}
-          r={p.size}
-          fill={colorMap[p.c].fill}
-        />
-      ))}
+      {data.map((p, i) => {
+        const s = getSize(p.winProb);
+        return (
+          <circle
+            key={i}
+            cx={sx(p.winProb)}
+            cy={sy(p.odds)}
+            r={s}
+            fill={colorMap[p.trend].fill}
+          />
+        );
+      })}
     </svg>
   );
 }
+
+// Fallback data when no points provided
+const defaultPoints: MarketPoint[] = [
+  { winProb: 5, odds: 8, trend: "dropping" },
+  { winProb: 10, odds: 8, trend: "dropping" },
+  { winProb: 15, odds: 11, trend: "dropping" },
+  { winProb: 20, odds: 13, trend: "dropping" },
+  { winProb: 25, odds: 16, trend: "dropping" },
+  { winProb: 30, odds: 16, trend: "dropping" },
+  { winProb: 35, odds: 18, trend: "drifting" },
+  { winProb: 35, odds: 13, trend: "stable" },
+  { winProb: 40, odds: 17, trend: "stable" },
+];

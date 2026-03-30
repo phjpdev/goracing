@@ -193,6 +193,22 @@ export default function RaceDetailPage() {
     ? analysis.topPicks.slice(1, 5).map((p) => parseFloat(p.winPct) || 0)
     : [0, 0, 0, 0];
 
+  // Market activity: map picks with runner odds
+  // Trend: compare AI winPct vs implied probability from odds (1/odds * 100)
+  // If AI winPct > implied prob → odds dropping (value), if < → drifting, else stable
+  const marketPoints = analysis?.topPicks
+    ? analysis.topPicks.map((pick) => {
+        const runner = hkjcRace.runners?.find((r) => r.no === pick.no);
+        const odds = parseFloat(runner?.winOdds ?? "0") || 0;
+        const wp = parseFloat(pick.winPct) || 0;
+        const impliedProb = odds > 0 ? (1 / odds) * 100 : 0;
+        const diff = wp - impliedProb;
+        const trend: "dropping" | "drifting" | "stable" =
+          diff > 3 ? "dropping" : diff < -3 ? "drifting" : "stable";
+        return { winProb: wp, odds, trend };
+      }).filter((p) => p.odds > 0 && p.winProb > 0)
+    : undefined;
+
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       <main className="mx-auto w-full max-w-[1600px] space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -283,6 +299,7 @@ export default function RaceDetailPage() {
             radarLabels={radarLabels}
             winPct={winPct}
             donutSegments={donutSegments}
+            marketPoints={marketPoints}
           />
         )}
       </main>
