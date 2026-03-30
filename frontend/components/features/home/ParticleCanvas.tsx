@@ -41,9 +41,9 @@ export function ParticleCanvas() {
     type: "ambient" | "trail" | "burst" = "ambient"
   ): Particle => {
     const angle = Math.random() * Math.PI * 2;
-    const speeds = { ambient: Math.random() * 0.3 + 0.05, trail: Math.random() * 1.2 + 0.3, burst: Math.random() * 3.5 + 1.5 };
+    const speeds = { ambient: Math.random() * 1.2 + 0.45, trail: Math.random() * 1.8 + 0.45, burst: Math.random() * 5.25 + 2.25 };
     const speed = speeds[type];
-    const sizes = { ambient: Math.random() * 1 + 0.3, trail: Math.random() * 1.2 + 0.4, burst: Math.random() * 1.8 + 0.6 };
+    const sizes = { ambient: Math.random() * 2.5 + 1.2, trail: Math.random() * 1.5 + 0.6, burst: Math.random() * 2 + 0.8 };
     const s = sizes[type];
     return {
       x: x + (Math.random() - 0.5) * spread,
@@ -52,7 +52,7 @@ export function ParticleCanvas() {
       vy: Math.sin(angle) * speed,
       size: s,
       baseSize: s,
-      opacity: type === "ambient" ? Math.random() * 0.4 + 0.1 : Math.random() * 0.7 + 0.3,
+      opacity: type === "ambient" ? Math.random() * 0.5 + 0.25 : Math.random() * 0.7 + 0.3,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       life: 0,
       maxLife: type === "burst" ? Math.random() * 70 + 40 : type === "trail" ? Math.random() * 50 + 25 : Math.random() * 250 + 120,
@@ -111,7 +111,7 @@ export function ParticleCanvas() {
       const pos = getLocal(clientX, clientY);
       burstRef.current = { x: pos.x, y: pos.y, time: performance.now(), strength: 1 };
       // Spawn burst particles
-      for (let i = 0; i < 18; i++) {
+      for (let i = 0; i < 8; i++) {
         particles.push(makeParticle(pos.x, pos.y, 10, "burst"));
       }
     };
@@ -124,7 +124,7 @@ export function ParticleCanvas() {
     parent.addEventListener("mousedown", onPointerDown);
     parent.addEventListener("touchstart", onPointerDown as EventListener, { passive: true });
 
-    const CONNECTION_DIST = 110;
+    const CONNECTION_DIST = 150;
     const MOUSE_RADIUS = 180;
 
     const animate = (time: number) => {
@@ -163,12 +163,12 @@ export function ParticleCanvas() {
             // Respawn ambient
             p.x = Math.random() * w;
             p.y = Math.random() * h;
-            p.vx = (Math.random() - 0.5) * 0.2;
-            p.vy = (Math.random() - 0.5) * 0.2;
+            p.vx = (Math.random() - 0.5) * 1.2;
+            p.vy = (Math.random() - 0.5) * 1.2;
             p.life = 0;
             p.maxLife = Math.random() * 250 + 120;
-            p.opacity = Math.random() * 0.4 + 0.1;
-            p.baseSize = Math.random() * 1 + 0.3;
+            p.opacity = Math.random() * 0.5 + 0.25;
+            p.baseSize = Math.random() * 2.5 + 1.2;
             p.size = p.baseSize;
             p.isBurst = false;
             p.color = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -255,12 +255,12 @@ export function ParticleCanvas() {
               if (db < 250) boost += 0.35 * burst.strength * (1 - db / 250);
             }
 
-            const lineAlpha = (0.06 + boost) * prox * Math.min(fadeA, fadeB);
+            const lineAlpha = (0.12 + boost) * prox * Math.min(fadeA, fadeB);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
             ctx.strokeStyle = `rgba(${LINE_COLOR}, ${lineAlpha})`;
-            ctx.lineWidth = Math.max(0.1, 0.5 + prox * 0.5);
+            ctx.lineWidth = Math.max(0.2, 1 + prox * 1);
             ctx.stroke();
           }
         }
@@ -281,10 +281,10 @@ export function ParticleCanvas() {
         const drawSize = Math.max(p.size, 0.1);
 
         // Soft glow
-        const glowRadius = drawSize * 5;
+        const glowRadius = drawSize * 3;
         const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowRadius);
-        grad.addColorStop(0, `rgba(${p.color}, ${alpha * 0.3})`);
-        grad.addColorStop(0.4, `rgba(${p.color}, ${alpha * 0.08})`);
+        grad.addColorStop(0, `rgba(${p.color}, ${alpha * 0.15})`);
+        grad.addColorStop(0.4, `rgba(${p.color}, ${alpha * 0.04})`);
         grad.addColorStop(1, `rgba(${p.color}, 0)`);
         ctx.beginPath();
         ctx.arc(p.x, p.y, glowRadius, 0, Math.PI * 2);
