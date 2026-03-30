@@ -47,7 +47,7 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
 
       <div className="relative grid grid-cols-[120px_1fr] lg:grid-cols-2 gap-0 items-center">
         {/* Track visual */}
-        <div className="relative">
+        <div className="relative -ml-4 sm:-ml-5 lg:-ml-6">
           <Image src={RACE_VECTOR} alt="Race track" width={220} height={400} className="w-full max-w-[120px] lg:max-w-[220px]" />
           <div className="absolute top-[16%] left-[24%] hidden xl:block pointer-events-none">
             <Image src={RACE_BAR1} alt="" width={60} height={16} className="object-contain" />
