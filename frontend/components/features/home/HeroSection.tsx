@@ -18,7 +18,7 @@ export function HeroSection() {
         <div className="relative mx-auto w-full max-w-[1360px] overflow-hidden px-5 sm:px-6 lg:px-10">
           <div className="relative flex flex-col lg:grid lg:h-[75svh] w-full lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             {/* Hero image */}
-            <section className="relative h-[45svh] lg:h-auto lg:flex items-stretch overflow-hidden order-1 lg:order-2">
+            <section className="relative h-[45svh] lg:h-auto lg:flex items-stretch overflow-hidden order-1 lg:order-2 -mx-5 sm:-mx-6 lg:mx-0">
               <div className="relative h-full w-full overflow-hidden">
                 <Image
                   src="/assets/hero-image.png"
