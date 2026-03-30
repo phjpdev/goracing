@@ -55,8 +55,8 @@ export function ParticleCanvas() {
       opacity: type === "ambient" ? Math.random() * 0.5 + 0.25 : Math.random() * 0.7 + 0.3,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       life: 0,
-      maxLife: type === "burst" ? Math.random() * 70 + 40 : type === "trail" ? Math.random() * 50 + 25 : Math.random() * 250 + 120,
-      isBurst: type === "burst",
+      maxLife: type === "burst" ? Math.random() * 25 + 15 : type === "trail" ? Math.random() * 50 + 25 : Math.random() * 250 + 120,
+      isBurst: type === "burst" || type === "trail",
     };
   }, []);
 
@@ -137,13 +137,13 @@ export function ParticleCanvas() {
       // Burst fade: strength goes from 1 → 0 over 1.5 seconds
       const burstAge = (time - burst.time) / 1000;
       if (burstAge < 1.5) {
-        burst.strength = Math.max(0, 1 - burstAge / 1.5);
+        burst.strength = Math.max(0, 1 - burstAge / 0.8);
       } else {
         burst.strength = 0;
       }
 
-      // Spawn trail particles on move
-      if (mouse.active && time - lastSpawnRef.current > 60) {
+      // Spawn trail particles on move (skip during burst)
+      if (mouse.active && burst.strength === 0 && time - lastSpawnRef.current > 60) {
         particles.push(makeParticle(mouse.x, mouse.y, 30, "trail"));
         lastSpawnRef.current = time;
       }
