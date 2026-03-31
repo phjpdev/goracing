@@ -4,13 +4,10 @@ type AIWinDonutChartProps = {
 };
 
 export function AIWinDonutChart({ winPct }: AIWinDonutChartProps) {
-  // Match Figma layout: 343 × 351
   const vw = 343;
   const vh = 351;
-  // Center derived from Figma ring positions
   const cx = 175.8;
   const cy = 195.3;
-  // Ring radii from Figma (outer: 243.24/2, inner: 148.6/2)
   const outerR = 121.6;
   const innerR = 74.3;
   const mainR = (outerR + innerR) / 2;
@@ -33,65 +30,52 @@ export function AIWinDonutChart({ winPct }: AIWinDonutChartProps) {
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          {/* Win arc gradient: Figma 112.6deg #FFB700 → #AEFFAC */}
-          <linearGradient id="wg" x1="0%" y1="0%" x2="60%" y2="100%">
-            <stop offset="9%" stopColor="#FFB700" />
-            <stop offset="87%" stopColor="#AEFFAC" />
+          {/* Arc gradient: vertical so mirror doesn't flip it. Gold at top → green at bottom */}
+          <linearGradient id="wg" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stopColor="#FFB700" />
+            <stop offset="35%" stopColor="#E0C030" />
+            <stop offset="65%" stopColor="#C0D860" />
+            <stop offset="100%" stopColor="#90EE90" />
           </linearGradient>
 
-          {/* Yellow glow blur: Figma blur(110.86px) */}
+          {/* Warm ambient blur */}
           <filter id="yb" x="-300%" y="-300%" width="700%" height="700%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="55" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="50" />
           </filter>
 
-          {/* Arc shadow: Figma box-shadow 0 0 84.86px #FFF700 */}
-          <filter id="as" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="12" />
+          {/* Very soft glow for arc */}
+          <filter id="as" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
           </filter>
-
-          {/* Glass gradient: Figma 114.96deg */}
-          <linearGradient id="gl" gradientTransform="rotate(115)">
-            <stop offset="17%" stopColor="rgba(249,209,107,0.2)" />
-            <stop offset="88%" stopColor="rgba(250,253,166,0.2)" />
-          </linearGradient>
         </defs>
 
-        {/* Yellow ambient glow — Figma: 93.9×93.9 at (53.21, 175.83) blur 110.86 */}
-        <ellipse cx={100} cy={223} rx={47} ry={47} fill="#E3CF39" filter="url(#yb)" opacity={0.45} />
+        {/* Warm golden ambient glow */}
+        <ellipse cx={130} cy={235} rx={50} ry={50} fill="#D4A820" filter="url(#yb)" opacity={0.22} />
+        {/* Inner area warm tint */}
+        <ellipse cx={cx} cy={cy + 5} rx={35} ry={35} fill="#D4A820" filter="url(#yb)" opacity={0.06} />
 
-        {/* Outer ring — Figma: stroke 2.9573 rgba(255,255,255,0.21) */}
+        {/* Outer ring */}
         <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(255,255,255,0.21)" strokeWidth={2.96} />
 
         {/* Inner ring */}
         <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="rgba(255,255,255,0.21)" strokeWidth={2.96} />
 
-        {/* Frosted glass shape — mirrored to match arc direction */}
-        <rect
-          x={cx - 20}
-          y={58}
-          width={98}
-          height={110.5}
-          rx={4}
-          fill="rgba(249,209,107,0.08)"
-          transform={`rotate(9.38, ${cx + 29}, 113.3)`}
-        />
-
-        {/* Arc group — mirrored horizontally so arc goes counter-clockwise (left) */}
+        {/* Arc — counter-clockwise (mirrored) */}
         <g transform={`translate(${cx * 2}, 0) scale(-1, 1)`}>
-          {/* Arc glow layer */}
+          {/* Subtle warm glow behind arc */}
           <circle
             cx={cx} cy={cy} r={mainR}
             fill="none"
-            stroke="url(#wg)"
-            strokeWidth={arcStroke + 6}
+            stroke="#D4A820"
+            strokeWidth={arcStroke + 12}
             strokeDasharray={`${winDash} ${circumference}`}
             strokeLinecap="round"
             transform={`rotate(-90 ${cx} ${cy})`}
             filter="url(#as)"
-            opacity={0.5}
+            opacity={0.12}
           />
 
-          {/* Main win arc */}
+          {/* Main arc */}
           <circle
             cx={cx} cy={cy} r={mainR}
             fill="none"
@@ -100,30 +84,30 @@ export function AIWinDonutChart({ winPct }: AIWinDonutChartProps) {
             strokeDasharray={`${winDash} ${circumference}`}
             strokeLinecap="round"
             transform={`rotate(-90 ${cx} ${cy})`}
-            style={{ filter: "drop-shadow(0 0 16px rgba(255,247,0,0.35))" }}
+            style={{ filter: "drop-shadow(0 0 4px rgba(210,170,30,0.2))" }}
           />
         </g>
 
-        {/* Green decorative arc — Figma: 129.85×65.43 at (45.6, 33.8) stroke #57BF9C */}
+        {/* Green decorative arc — outermost */}
         <path
-          d={describeArc(outerR + 35, -168, -102)}
+          d={describeArc(outerR + 40, -178, -108)}
           fill="none" stroke="#57BF9C" strokeWidth={2.96} strokeLinecap="round"
         />
 
-        {/* Purple decorative arc — Figma: 200.34×59.89 at (58.29, 50.8) stroke #C09FF8 */}
+        {/* Purple decorative arc — middle, wide span */}
         <path
-          d={describeArc(outerR + 25, -162, -78)}
+          d={describeArc(outerR + 26, -160, -68)}
           fill="none" stroke="#C09FF8" strokeWidth={2.96} strokeLinecap="round"
         />
 
-        {/* Orange decorative arc — Figma: 72.08×5.49 at (139.23, 75.27) stroke #ECB265 */}
+        {/* Orange decorative arc — innermost, short */}
         <path
-          d={describeArc(outerR + 14, -118, -93)}
+          d={describeArc(outerR + 15, -112, -90)}
           fill="none" stroke="#ECB265" strokeWidth={2.96} strokeLinecap="round"
         />
       </svg>
 
-      {/* Center text — Figma: at calc(50% - 73px/2 + 4.27px), top: 188.82px */}
+      {/* Center text */}
       <div
         className="absolute flex flex-col items-center pointer-events-none"
         style={{ left: "calc(50% + 4px)", top: "54%", transform: "translate(-50%, -50%)" }}
