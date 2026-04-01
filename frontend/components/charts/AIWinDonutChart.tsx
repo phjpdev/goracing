@@ -17,7 +17,7 @@ export function AIWinDonutChart({ winPct }: AIWinDonutChartProps) {
       />
       <div
         className="absolute flex flex-col items-center justify-center pointer-events-none"
-        style={{ left: "58%", top: "50%", transform: "translate(-50%, -50%)" }}
+        style={{ left: "58%", top: "52%", transform: "translate(-50%, -50%)" }}
       >
         <span className="font-inter text-[24px] font-medium text-[#EEC625] leading-[1.3]">
           {winPct}%
