@@ -22,14 +22,26 @@ export const en: TranslationKeys = {
 
   // Feature cards
   features: {
-    aiIntelligence: "AI Racing Intelligence",
-    aiIntelligenceDesc: "Leverage advanced AI to analyze race data and provide accurate predictions.",
-    smartRacecard: "The Smart Race Card",
-    smartRacecardDesc: "Comprehensive race information display for quick decision making.",
-    liveOdds: "Live Odds Tracker",
-    liveOddsDesc: "Track odds movements in real-time to capture the best value.",
-    insights: "Deep Insights",
-    insightsDesc: "Multi-angle deep analysis of every race for an edge.",
+    aiIntelligence: "Advanced AI-Powered Racing Insights",
+    aiIntelligenceDesc: "Our cutting-edge algorithms analyze historical form, track conditions, jockey-trainer statistics, and real-time market trends to deliver accurate, actionable insights before the race starts.",
+    smartRacecard: "The Smart Race Card Experience",
+    smartRacecardDesc: "A completely redesigned race card that integrates odds, performance trends, speed figures, and runner insights into one clean, intuitive, and decision-ready interface.",
+    liveOdds: "Predictive Intelligence",
+    liveOddsDesc: "Data-driven win, place, and exotic probabilities that dynamically adapt to live odds movements, track bias, and weather changes.",
+    insights: "See The Race Before It Happens",
+    insightsDesc: "Advanced race simulation engine lets you visualize different race scenarios, understand the impact of pace, barrier draw, track conditions, and riding tactics on the final outcome.",
+  },
+
+  // Visual Analytics section
+  visualAnalytics: {
+    title: "Visual Analytics",
+    subtitle: "Powerful visuals transform raw racing data into patterns you can read at a glance and act on with confidence.",
+    heatmaps: "Seasonal Heatmaps",
+    heatmapsDesc: "Discover hidden performance patterns across seasons, distances, track surfaces, and weather conditions to identify long-term edges.",
+    marketActivity: "Live Market Activity",
+    marketActivityDesc: "Monitor real-time odds fluctuations, betting momentum, and market confidence to spot value bets and smart money movements.",
+    pedigree: "Pedigree Radar Analysis",
+    pedigreeDesc: "Interactive visualization of bloodline strengths and weaknesses, helping you assess a horse's suitability for specific distances, surfaces, and race conditions.",
   },
 
   // Matches page

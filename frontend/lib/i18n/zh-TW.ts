@@ -20,14 +20,26 @@ export const zhTW = {
 
   // Feature cards
   features: {
-    aiIntelligence: "AI 賽馬情報",
-    aiIntelligenceDesc: "利用先進AI分析賽事數據，提供精準預測。",
-    smartRacecard: "智能馬卡",
-    smartRacecardDesc: "全面展示賽事資訊，助你快速決策。",
-    liveOdds: "即場賠率追蹤",
-    liveOddsDesc: "即時追蹤賠率變化，捕捉最佳時機。",
-    insights: "深度分析",
-    insightsDesc: "多角度深入分析每場賽事，洞察先機。",
+    aiIntelligence: "先進的 AI 賽馬分析洞見",
+    aiIntelligenceDesc: "我們的尖端演算法綜合分析馬匹過往表現、場地狀況、騎師練馬師數據，以及即時市場趨勢，在賽事開始前為你提供準確且實用的分析見解。",
+    smartRacecard: "智能賽馬卡體驗",
+    smartRacecardDesc: "全新設計的賽馬卡，將賠率、表現趨勢、速度數據及馬匹分析整合成簡潔、直觀、隨時可決策的介面。",
+    liveOdds: "預測智能系統",
+    liveOddsDesc: "以數據為基礎的勝出、位置及連贏概率，會隨即時賠率變化、場地偏好及天氣狀況即時調整。",
+    insights: "賽前預見賽事",
+    insightsDesc: "先進的賽事模擬引擎，讓你模擬不同比賽情境，清楚了解步速、檔位、場地狀況及騎法如何影響最終結果。",
+  },
+
+  // Visual Analytics section
+  visualAnalytics: {
+    title: "視覺化分析",
+    subtitle: "強大的視覺化工具將原始賽馬數據轉化為一目了然、信心十足的決策依據。",
+    heatmaps: "季節熱圖分析",
+    heatmapsDesc: "透過季節、距離、場地及天氣條件的熱圖，輕鬆發現長期隱藏的表現規律，找出優勢所在。",
+    marketActivity: "即時市場動向",
+    marketActivityDesc: "實時監測賠率波動、投注動能及市場信心變化，幫助你捕捉價值投注及大戶資金流向。",
+    pedigree: "血統雷達分析",
+    pedigreeDesc: "互動式血統優勢與弱點視覺化分析，協助評估馬匹對不同距離、場地及賽事條件的適合程度。",
   },
 
   // Matches page

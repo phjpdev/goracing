@@ -1,36 +1,28 @@
+"use client";
+
 import Image from "next/image";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 const FEATURE_CARD_CLASS =
   "group flex h-auto flex-col rounded-[16px] border border-white/[0.08] bg-white/[0.03] p-6 lg:p-7 transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06]";
 
-const FEATURES = [
-  {
-    icon: "/assets/Frame 2147224662.png",
-    title: "AI Racing Intelligence Platform",
-    description:
-      "Advanced algorithms analyze form, conditions, and trends to deliver insights before the race begins.",
-  },
-  {
-    icon: "/assets/id-card.png",
-    title: "The Smart Race Card Experience",
-    description:
-      "Redesigned race card that brings odds, trends, and runner insights into streamlined, decision-ready view.",
-  },
-  {
-    icon: "/assets/zap.png",
-    title: "Predictive Intelligence",
-    description:
-      "Forecast race outcomes using data-driven probabilities that adapt to live market and track changes.",
-  },
-  {
-    icon: "/assets/eye.png",
-    title: "See The Race Before It Happens",
-    description:
-      "Simulate race scenarios and understand how pace, draw, and conditions can shape the final result.",
-  },
+const FEATURE_ICONS = [
+  "/assets/Frame 2147224662.png",
+  "/assets/id-card.png",
+  "/assets/zap.png",
+  "/assets/eye.png",
 ];
 
 export function FeatureCards() {
+  const { t } = useLanguage();
+
+  const features = [
+    { icon: FEATURE_ICONS[0], title: t.features.aiIntelligence, description: t.features.aiIntelligenceDesc },
+    { icon: FEATURE_ICONS[1], title: t.features.smartRacecard, description: t.features.smartRacecardDesc },
+    { icon: FEATURE_ICONS[2], title: t.features.liveOdds, description: t.features.liveOddsDesc },
+    { icon: FEATURE_ICONS[3], title: t.features.insights, description: t.features.insightsDesc },
+  ];
+
   return (
     <section className="mt-10 sm:mt-16 lg:mt-24 w-full max-w-[1360px] mx-auto px-5 sm:px-6 lg:px-10">
       <style>{`
@@ -40,7 +32,7 @@ export function FeatureCards() {
         }
       `}</style>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
-        {FEATURES.map((feature) => (
+        {features.map((feature) => (
           <article key={feature.title} className={FEATURE_CARD_CLASS}>
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.06] mb-5" style={{ animation: "icon-blink 2s ease-in-out infinite" }}>
               <Image src={feature.icon} alt="" width={54} height={44} className="h-8 w-auto" />
