@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Header } from "@/components/layout";
+import { Header, FloatingTelegram } from "@/components/layout";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { LanguageProvider } from "@/lib/context/LanguageContext";
 import "./globals.css";
@@ -21,6 +21,7 @@ export default function RootLayout({
           <AuthProvider>
             <Header />
             {children}
+            <FloatingTelegram />
           </AuthProvider>
         </LanguageProvider>
       </body>
