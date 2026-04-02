@@ -52,6 +52,16 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
             opacity: 1;
           }
         }
+        @keyframes card-slide-in {
+          0% {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
       `}</style>
       <h2 className="font-inter text-base font-semibold text-white mb-4 sm:text-[22px]">
         {t.races.winPercentage}
@@ -81,6 +91,9 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
             <div
               key={row.rank}
               className={`rounded-lg sm:rounded-xl bg-[#1e1e1e] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] border border-white/5 min-w-0 ${HORSE_BOX_OFFSET[idx + 1] ?? ""}`}
+              style={{
+                animation: `card-slide-in 0.5s ease-out ${idx * 0.25}s both`,
+              }}
             >
               <div className="flex items-center gap-2.5">
                 <span
