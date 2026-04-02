@@ -53,26 +53,13 @@ export function PedigreeRadarChart({ values, labels }: PedigreeRadarChartProps) 
     <div ref={containerRef}>
       <style>{`
         @keyframes radar-expand {
-          0% {
-            transform: scale(0);
-            opacity: 0;
-          }
-          60% {
-            transform: scale(1.05);
-            opacity: 0.9;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.05); opacity: 0.9; }
+          100% { transform: scale(1); opacity: 1; }
         }
         @keyframes radar-grid-fade {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
-          }
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
       `}</style>
       <svg
@@ -94,29 +81,18 @@ export function PedigreeRadarChart({ values, labels }: PedigreeRadarChartProps) 
           </linearGradient>
         </defs>
 
-        {/* 1. Data polygon — behind grid */}
+        {/* 1. Data polygon */}
         <g style={{
           transformOrigin: `${center}px ${center}px`,
           ...(visible
-            ? { animation: "radar-expand 0.8s ease-out 0.3s both" }
+            ? { animation: "radar-expand 1.8s ease-out 0.6s both" }
             : { opacity: 0, transform: "scale(0)" }),
         }}>
-          <path
-            d={dataPath}
-            fill="url(#pedigreeFill)"
-            fillOpacity={0.85}
-            filter="url(#pedigreeGlow)"
-          />
-          <path
-            d={dataPath}
-            fill="none"
-            stroke="#5EEEAD"
-            strokeWidth={1.5}
-            strokeOpacity={0.6}
-          />
+          <path d={dataPath} fill="url(#pedigreeFill)" fillOpacity={0.85} filter="url(#pedigreeGlow)" />
+          <path d={dataPath} fill="none" stroke="#5EEEAD" strokeWidth={1.5} strokeOpacity={0.6} />
         </g>
 
-        {/* 2. Grid rings — on top */}
+        {/* 2. Grid rings */}
         {gridLevels.map((scale, gi) => {
           const pts = Array.from({ length: n }, (_, i) => getPoint(i, scale));
           const d = makePath(pts);
@@ -128,25 +104,22 @@ export function PedigreeRadarChart({ values, labels }: PedigreeRadarChartProps) 
               stroke="rgba(255,255,255,0.25)"
               strokeWidth={1.2}
               style={visible
-                ? { animation: `radar-grid-fade 0.4s ease-out ${gi * 0.1}s both` }
+                ? { animation: `radar-grid-fade 0.8s ease-out ${gi * 0.2}s both` }
                 : { opacity: 0 }
               }
             />
           );
         })}
 
-        {/* 3. Axis lines — on top */}
+        {/* 3. Axis lines */}
         {axisPoints.map((p, i) => (
           <line
             key={i}
-            x1={center}
-            y1={center}
-            x2={p.x}
-            y2={p.y}
+            x1={center} y1={center} x2={p.x} y2={p.y}
             stroke="rgba(255,255,255,0.2)"
             strokeWidth={1}
             style={visible
-              ? { animation: `radar-grid-fade 0.4s ease-out ${i * 0.08}s both` }
+              ? { animation: `radar-grid-fade 0.8s ease-out ${i * 0.15}s both` }
               : { opacity: 0 }
             }
           />
@@ -162,29 +135,26 @@ export function PedigreeRadarChart({ values, labels }: PedigreeRadarChartProps) 
             return (
               <line
                 key={`${scale}-${i}`}
-                x1={pt.x - perpX}
-                y1={pt.y - perpY}
-                x2={pt.x + perpX}
-                y2={pt.y + perpY}
+                x1={pt.x - perpX} y1={pt.y - perpY}
+                x2={pt.x + perpX} y2={pt.y + perpY}
                 stroke="rgba(255,255,255,0.2)"
                 strokeWidth={0.8}
-                style={visible ? { animation: `radar-grid-fade 0.3s ease-out 0.2s both` } : { opacity: 0 }}
+                style={visible ? { animation: "radar-grid-fade 0.6s ease-out 0.4s both" } : { opacity: 0 }}
               />
             );
           })
         )}
 
-        {/* 5. Labels — fade in last */}
+        {/* 5. Labels */}
         {labelPoints.map((lp, i) => (
           <text
             key={i}
-            x={lp.x}
-            y={lp.y}
+            x={lp.x} y={lp.y}
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-white/60 text-[10px] font-inter"
             style={visible
-              ? { animation: `radar-grid-fade 0.4s ease-out ${0.5 + i * 0.08}s both` }
+              ? { animation: `radar-grid-fade 0.8s ease-out ${1 + i * 0.15}s both` }
               : { opacity: 0 }
             }
           >

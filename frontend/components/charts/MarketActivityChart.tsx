@@ -74,7 +74,7 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
         </defs>
 
         {/* Grid + labels */}
-        <g style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease-out" }}>
+        <g style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease-out" }}>
           {yTicks.map((v) => (
             <line key={v} x1={pad.left} y1={sy(v)} x2={w - pad.right} y2={sy(v)} stroke="rgba(255,255,255,0.06)" strokeWidth={0.8} />
           ))}
@@ -93,7 +93,7 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
           const s = getSize(p.winProb);
           const targetY = sy(p.odds);
           const riseDistance = bottomY - targetY;
-          const delay = 0.2 + i * 0.08;
+          const delay = 0.4 + i * 0.15;
 
           return (
             <g
@@ -101,7 +101,7 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
               style={{
                 transform: visible ? "translateY(0)" : `translateY(${riseDistance}px)`,
                 opacity: visible ? 1 : 0,
-                transition: `transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}s, opacity 0.3s ease-out ${delay}s`,
+                transition: `transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}s, opacity 0.6s ease-out ${delay}s`,
               }}
             >
               <circle
