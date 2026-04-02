@@ -42,6 +42,12 @@ export const zhTW = {
     pedigreeDesc: "互動式血統優勢與弱點視覺化分析，協助評估馬匹對不同距離、場地及賽事條件的適合程度。",
   },
 
+  // Connect section
+  connect: {
+    title: "聯絡Go Racing",
+    description: "有任何問題或需要專業支援嗎？我們的團隊隨時準備協助你探索賽馬分析之旅。歡迎隨時聯絡我們。",
+  },
+
   // Matches page
   matches: {
     liveOddsMatrix: "即場賠率矩陣",

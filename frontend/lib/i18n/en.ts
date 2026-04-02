@@ -44,6 +44,12 @@ export const en: TranslationKeys = {
     pedigreeDesc: "Interactive visualization of bloodline strengths and weaknesses, helping you assess a horse's suitability for specific distances, surfaces, and race conditions.",
   },
 
+  // Connect section
+  connect: {
+    title: "Connect With the Go Racing",
+    description: "Have questions or need expert guidance? Our support team is ready to assist you on your racing analytics journey. Feel free to reach out anytime.",
+  },
+
   // Matches page
   matches: {
     liveOddsMatrix: "Live Odds Matrix",
