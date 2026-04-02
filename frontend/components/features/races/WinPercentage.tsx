@@ -41,13 +41,25 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
 
   return (
     <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 sm:p-5 lg:p-6 h-full">
+      <style>{`
+        @keyframes track-breathe {
+          0%, 100% {
+            filter: brightness(1) drop-shadow(0 0 8px rgba(80,160,255,0.3));
+            opacity: 0.9;
+          }
+          50% {
+            filter: brightness(1.3) drop-shadow(0 0 24px rgba(80,180,255,0.6)) drop-shadow(0 0 48px rgba(60,140,255,0.25));
+            opacity: 1;
+          }
+        }
+      `}</style>
       <h2 className="font-inter text-base font-semibold text-white mb-4 sm:text-[22px]">
         {t.races.winPercentage}
       </h2>
 
       <div className="relative grid grid-cols-[120px_1fr] lg:grid-cols-2 gap-0 items-center">
         {/* Track visual */}
-        <div className="relative -ml-4 sm:-ml-5 lg:-ml-6">
+        <div className="relative -ml-4 sm:-ml-5 lg:-ml-6" style={{ animation: "track-breathe 3s ease-in-out infinite" }}>
           <Image src={RACE_VECTOR} alt="Race track" width={220} height={400} className="w-full lg:max-w-[220px]" />
           <div className="absolute top-[16%] left-[24%] hidden xl:block pointer-events-none">
             <Image src={RACE_BAR1} alt="" width={60} height={16} className="object-contain" />
