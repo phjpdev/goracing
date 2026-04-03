@@ -5,9 +5,9 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <RecordsSection />
       <FeatureCards />
       <VisualAnalyticsSection />
-      <RecordsSection />
       <ConnectSection />
       <Footer />
     </>
