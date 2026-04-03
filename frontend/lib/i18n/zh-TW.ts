@@ -6,6 +6,7 @@ export const zhTW = {
     roleMember: "會員",
     roleAdmin: "管理員",
     roleSubadmin: "副管理員",
+    records: "記錄",
   },
 
   // Hero / Landing
@@ -192,12 +193,26 @@ export const zhTW = {
     dailyIncome: "當日收入",
     selectDate: "選擇日期",
     noIncome: "無收入",
+    records: "記錄",
   },
   subadmin: {
     dashboard: "副管理員儀表板",
     addMember: "新增會員",
     members: "會員",
     noMembers: "尚無會員。",
+  },
+
+  // Records
+  records: {
+    title: "每日記錄",
+    addNew: "新增記錄",
+    date: "日期",
+    description: "描述",
+    media: "媒體",
+    save: "儲存",
+    cancel: "取消",
+    delete: "刪除",
+    readMore: "閱讀更多",
   },
 };
 

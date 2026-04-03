@@ -8,6 +8,7 @@ export const en: TranslationKeys = {
     roleMember: "Member",
     roleAdmin: "Admin",
     roleSubadmin: "Subadmin",
+    records: "Records",
   },
 
   // Hero / Landing
@@ -194,11 +195,25 @@ export const en: TranslationKeys = {
     dailyIncome: "Daily Income",
     selectDate: "Select Date",
     noIncome: "No income",
+    records: "Records",
   },
   subadmin: {
     dashboard: "Subadmin Dashboard",
     addMember: "Add Member",
     members: "Members",
     noMembers: "No members yet.",
+  },
+
+  // Records
+  records: {
+    title: "Daily Records",
+    addNew: "Add Record",
+    date: "Date",
+    description: "Description",
+    media: "Media",
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    readMore: "Read More",
   },
 } as const;

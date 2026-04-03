@@ -12,4 +12,5 @@ export const ROUTES = {
   ADMIN_DASHBOARD: "/admin",
   SUBADMIN_LOGIN: "/subadmin/login",
   SUBADMIN_DASHBOARD: "/subadmin",
+  ADMIN_RECORDS: "/admin/records",
 } as const;
