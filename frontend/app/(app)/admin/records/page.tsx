@@ -291,16 +291,16 @@ export default function RecordsPage() {
             />
           </div>
           {/* Existing media preview */}
-          {editingRecord && editingRecord.media && editingRecord.media.length > 0 && (
+          {editingRecord && editingRecord.media_urls && editingRecord.media_urls.length > 0 && (
             <div className="flex flex-col gap-1">
               <label className="text-sm text-[#B3B3B3]">Current {t.records.media}</label>
               <div className="flex gap-2 flex-wrap">
-                {editingRecord.media.map((m) => (
-                  <div key={m.id} className="w-16 h-16 rounded-lg overflow-hidden bg-[#1A1F2E]">
-                    {isVideo(m.filename) ? (
-                      <video src={`${MEDIA_BASE}/${m.filename}`} className="w-full h-full object-cover" muted />
+                {editingRecord.media_urls.map((url, i) => (
+                  <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-[#1A1F2E]">
+                    {isVideo(url) ? (
+                      <video src={`http://localhost:8000${url}`} className="w-full h-full object-cover" muted />
                     ) : (
-                      <img src={`${MEDIA_BASE}/${m.filename}`} alt="" className="w-full h-full object-cover" />
+                      <img src={`http://localhost:8000${url}`} alt="" className="w-full h-full object-cover" />
                     )}
                   </div>
                 ))}
