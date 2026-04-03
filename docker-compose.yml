@@ -39,6 +39,9 @@ services:
       - uploads:/app/uploads
     expose:
       - "8000"
+    networks:
+      - default
+      - topx
 
   frontend:
     build:
