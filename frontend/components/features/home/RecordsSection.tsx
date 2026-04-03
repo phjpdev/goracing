@@ -87,6 +87,12 @@ export function RecordsSection() {
               <div className="p-5 lg:p-6">
                 <p className="text-xs text-[#28E88E] font-medium mb-2">{formatDate(record.date, locale)}</p>
                 <p className="text-[14px] leading-[1.6] text-white/50 line-clamp-3">{record.description}</p>
+                <a
+                  href={`/records/${record.id}`}
+                  className="inline-block mt-3 text-[13px] font-medium text-[#eab308] hover:text-[#fbbf24] transition-colors no-underline"
+                >
+                  {t.records.readMore} →
+                </a>
               </div>
             </article>
           );
