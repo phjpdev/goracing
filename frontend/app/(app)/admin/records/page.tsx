@@ -17,6 +17,12 @@ type RecordForm = {
   files: File[];
 };
 
+// Convert backend media path to frontend proxy path
+// /uploads/records/uuid.png → /api/uploads/records/uuid.png
+function mediaUrl(path: string) {
+  return `/api${path}`;
+}
+
 function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
   if (!open) return null;
   return (
@@ -49,8 +55,39 @@ function formatDate(iso: string, locale: string) {
   return `${months[d.getMonth()]} ${day}, ${year} (${wd})`;
 }
 
-function isVideo(filename: string) {
-  return /\.(mp4|webm|mov|avi)$/i.test(filename);
+function isVideo(path: string) {
+  return /\.(mp4|webm|mov|avi)$/i.test(path);
+}
+
+// Upload with XHR for progress tracking
+function uploadWithProgress(
+  url: string,
+  method: string,
+  formData: FormData,
+  onProgress: (pct: number) => void,
+): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch {}
+      resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, data });
+    });
+
+    xhr.addEventListener("error", () => {
+      resolve({ ok: false, status: 0, data: { error: "Network error" } });
+    });
+
+    xhr.send(formData);
+  });
 }
 
 export default function RecordsPage() {
@@ -63,6 +100,7 @@ export default function RecordsPage() {
   const [deletingRecord, setDeletingRecord] = useState<RecordRow | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const fetchRecords = useCallback(async () => {
     const res = await fetch("/api/records");
@@ -79,6 +117,7 @@ export default function RecordsPage() {
   const handleAdd = async () => {
     setError("");
     setLoading(true);
+    setUploadProgress(0);
     const formData = new FormData();
     formData.append("date", addForm.date);
     formData.append("description", addForm.description);
@@ -86,14 +125,11 @@ export default function RecordsPage() {
       formData.append("files", file);
     }
 
-    const res = await fetch("/api/records", {
-      method: "POST",
-      body: formData,
-    });
+    const result = await uploadWithProgress("/api/records", "POST", formData, setUploadProgress);
     setLoading(false);
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Failed");
+    setUploadProgress(0);
+    if (!result.ok) {
+      setError((result.data.error as string) ?? "Failed");
       return;
     }
     setShowAdd(false);
@@ -115,6 +151,7 @@ export default function RecordsPage() {
     if (!editingRecord) return;
     setError("");
     setLoading(true);
+    setUploadProgress(0);
 
     const formData = new FormData();
     formData.append("date", editForm.date);
@@ -123,14 +160,11 @@ export default function RecordsPage() {
       formData.append("files", file);
     }
 
-    const res = await fetch(`/api/records/${editingRecord.id}`, {
-      method: "PUT",
-      body: formData,
-    });
+    const result = await uploadWithProgress(`/api/records/${editingRecord.id}`, "PUT", formData, setUploadProgress);
     setLoading(false);
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Failed");
+    setUploadProgress(0);
+    if (!result.ok) {
+      setError((result.data.error as string) ?? "Failed");
       return;
     }
     setEditingRecord(null);
@@ -144,6 +178,22 @@ export default function RecordsPage() {
     setLoading(false);
     setDeletingRecord(null);
     fetchRecords();
+  };
+
+  // Progress bar component
+  const ProgressBar = () => {
+    if (!loading || uploadProgress === 0) return null;
+    return (
+      <div className="flex flex-col gap-1 mt-2">
+        <div className="w-full h-2 bg-[#1A1F2E] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#28E88E] rounded-full transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          />
+        </div>
+        <p className="text-xs text-[#B3B3B3] text-right">{uploadProgress}%</p>
+      </div>
+    );
   };
 
   return (
@@ -175,17 +225,9 @@ export default function RecordsPage() {
                 <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-[#0D1117] flex items-center justify-center">
                   {firstMedia ? (
                     isVideo(firstMedia) ? (
-                      <video
-                        src={`http://localhost:8000${firstMedia}`}
-                        className="w-full h-full object-cover"
-                        muted
-                      />
+                      <video src={mediaUrl(firstMedia)} className="w-full h-full object-cover" muted />
                     ) : (
-                      <img
-                        src={`http://localhost:8000${firstMedia}`}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={mediaUrl(firstMedia)} alt="" className="w-full h-full object-cover" />
                     )
                   ) : (
                     <svg className="w-8 h-8 text-[#B3B3B3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +265,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Add Record Modal */}
-      <Modal open={showAdd} onClose={() => setShowAdd(false)}>
+      <Modal open={showAdd} onClose={() => !loading && setShowAdd(false)}>
         <h3 className="text-lg font-semibold mb-4">{t.records.addNew}</h3>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -261,15 +303,18 @@ export default function RecordsPage() {
             )}
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
+          <ProgressBar />
           <div className="flex justify-end gap-3 mt-2">
-            <button onClick={() => setShowAdd(false)} className="text-sm text-[#B3B3B3] hover:text-white">{t.records.cancel}</button>
-            <button onClick={handleAdd} disabled={loading} className="text-sm text-[#28E88E] font-medium hover:opacity-80 disabled:opacity-50">{t.records.save}</button>
+            <button onClick={() => setShowAdd(false)} disabled={loading} className="text-sm text-[#B3B3B3] hover:text-white disabled:opacity-50">{t.records.cancel}</button>
+            <button onClick={handleAdd} disabled={loading} className="text-sm text-[#28E88E] font-medium hover:opacity-80 disabled:opacity-50">
+              {loading ? `${locale === "zh-TW" ? "上傳中" : "Uploading"}...` : t.records.save}
+            </button>
           </div>
         </div>
       </Modal>
 
       {/* Edit Record Modal */}
-      <Modal open={!!editingRecord} onClose={() => setEditingRecord(null)}>
+      <Modal open={!!editingRecord} onClose={() => !loading && setEditingRecord(null)}>
         <h3 className="text-lg font-semibold mb-4">{t.admin.edit}</h3>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -298,9 +343,9 @@ export default function RecordsPage() {
                 {editingRecord.media_urls.map((url, i) => (
                   <div key={i} className="w-16 h-16 rounded-lg overflow-hidden bg-[#1A1F2E]">
                     {isVideo(url) ? (
-                      <video src={`http://localhost:8000${url}`} className="w-full h-full object-cover" muted />
+                      <video src={mediaUrl(url)} className="w-full h-full object-cover" muted />
                     ) : (
-                      <img src={`http://localhost:8000${url}`} alt="" className="w-full h-full object-cover" />
+                      <img src={mediaUrl(url)} alt="" className="w-full h-full object-cover" />
                     )}
                   </div>
                 ))}
@@ -324,9 +369,12 @@ export default function RecordsPage() {
             )}
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
+          <ProgressBar />
           <div className="flex justify-end gap-3 mt-2">
-            <button onClick={() => setEditingRecord(null)} className="text-sm text-[#B3B3B3] hover:text-white">{t.records.cancel}</button>
-            <button onClick={handleSaveEdit} disabled={loading} className="text-sm text-[#28E88E] font-medium hover:opacity-80 disabled:opacity-50">{t.records.save}</button>
+            <button onClick={() => setEditingRecord(null)} disabled={loading} className="text-sm text-[#B3B3B3] hover:text-white disabled:opacity-50">{t.records.cancel}</button>
+            <button onClick={handleSaveEdit} disabled={loading} className="text-sm text-[#28E88E] font-medium hover:opacity-80 disabled:opacity-50">
+              {loading ? `${locale === "zh-TW" ? "上傳中" : "Uploading"}...` : t.records.save}
+            </button>
           </div>
         </div>
       </Modal>

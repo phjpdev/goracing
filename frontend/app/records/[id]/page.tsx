@@ -90,7 +90,7 @@ export default function RecordDetailPage() {
           </button>
           {isVideo(selectedMedia) ? (
             <video
-              src={`http://localhost:8000${selectedMedia}`}
+              src={`/api${selectedMedia}`}
               className="max-w-full max-h-[90vh] rounded-lg"
               controls
               autoPlay
@@ -98,7 +98,7 @@ export default function RecordDetailPage() {
             />
           ) : (
             <img
-              src={`http://localhost:8000${selectedMedia}`}
+              src={`/api${selectedMedia}`}
               alt=""
               className="max-w-full max-h-[90vh] rounded-lg object-contain"
               onClick={(e) => e.stopPropagation()}
@@ -140,14 +140,14 @@ export default function RecordDetailPage() {
               >
                 {isVideo(url) ? (
                   <video
-                    src={`http://localhost:8000${url}`}
+                    src={`/api${url}`}
                     className="w-full h-[260px] sm:h-[300px] object-cover"
                     muted
                     playsInline
                   />
                 ) : (
                   <img
-                    src={`http://localhost:8000${url}`}
+                    src={`/api${url}`}
                     alt=""
                     className="w-full h-[260px] sm:h-[300px] object-cover"
                   />

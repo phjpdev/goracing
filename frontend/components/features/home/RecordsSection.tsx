@@ -64,14 +64,14 @@ export function RecordsSection() {
                 {firstMedia ? (
                   isVideo(firstMedia) ? (
                     <video
-                      src={`http://localhost:8000${firstMedia}`}
+                      src={`/api${firstMedia}`}
                       className="w-full h-full object-cover"
                       muted
                       playsInline
                     />
                   ) : (
                     <img
-                      src={`http://localhost:8000${firstMedia}`}
+                      src={`/api${firstMedia}`}
                       alt=""
                       className="w-full h-full object-cover"
                     />
