@@ -35,6 +35,8 @@ services:
       JWT_ALGORITHM: HS256
       JWT_EXPIRE_MINUTES: 10080
       ALLOWED_ORIGINS: https://goracing.ai,https://www.goracing.ai
+    volumes:
+      - uploads:/app/uploads
     expose:
       - "8000"
 
@@ -64,6 +66,7 @@ services:
 
 volumes:
   pgdata:
+  uploads:
 
 networks:
   topx:
