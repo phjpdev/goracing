@@ -41,7 +41,7 @@ services:
       - "8000"
     networks:
       - default
-      - topx
+      - proxy
 
   frontend:
     build:
@@ -65,13 +65,13 @@ services:
       - "3000"
     networks:
       - default
-      - topx
+      - proxy
 
 volumes:
   pgdata:
   uploads:
 
 networks:
-  topx:
+  proxy:
     external: true
-    name: topxhk_app-network
+    name: shared-proxy
