@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+import redis from "@/lib/redis";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+const LOCKED_TTL = 60 * 60 * 24 * 7; // 7 days
 
 type RunnerInput = {
   no: string;
@@ -29,6 +32,32 @@ type RaceInput = {
   raceTrack: { description_en: string };
   runners: RunnerInput[];
 };
+
+function pickTwoRandomIds(ids: string[]) {
+  if (ids.length <= 2) return ids.slice();
+  const copy = ids.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, 2);
+}
+
+async function getRoleFromRequest(request: NextRequest): Promise<string | undefined> {
+  const token = request.cookies.get("auth_token")?.value;
+  if (!token) return undefined;
+
+  const jwtKey = process.env.JWT_SECRET_KEY;
+  if (!jwtKey) return undefined;
+
+  try {
+    const secret = new TextEncoder().encode(jwtKey);
+    const { payload } = await jwtVerify(token, secret);
+    return payload.role as string | undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function buildPrompt(race: RaceInput): string {
   const runnersText = race.runners
@@ -94,6 +123,43 @@ export async function POST(request: NextRequest) {
     const race: RaceInput = body.race ?? body;
     const date: string = body.date ?? "";
     const venue: string = body.venue ?? "";
+
+    // 0. Enforce locked race visibility (admin/subadmin only)
+    if (race?.id && date && venue) {
+      const lockKey = `locked_races:${date}:${venue}`;
+      let lockedRaceIds: string[] = [];
+      try {
+        const raw = await redis.get(lockKey);
+        if (raw) lockedRaceIds = JSON.parse(raw);
+      } catch {
+        // ignore
+      }
+
+      // If locks aren't created yet, try to derive them from cached meeting data
+      if (!lockedRaceIds || lockedRaceIds.length === 0) {
+        try {
+          const meetingRaw = await redis.get(`meetings:${date}:${venue}`);
+          if (meetingRaw) {
+            const meetings = JSON.parse(meetingRaw);
+            const raceIds: string[] = (meetings?.[0]?.races ?? []).map((r: any) => r.id).filter(Boolean);
+            lockedRaceIds = pickTwoRandomIds(raceIds);
+            if (lockedRaceIds.length > 0) {
+              await redis.set(lockKey, JSON.stringify(lockedRaceIds), "EX", LOCKED_TTL);
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (lockedRaceIds?.includes(race.id)) {
+        const role = await getRoleFromRequest(request);
+        const isManager = role === "admin" || role === "subadmin";
+        if (!isManager) {
+          return NextResponse.json({ error: "請升級VVIP" }, { status: 403 });
+        }
+      }
+    }
 
     // 1. Check PostgreSQL cache via backend API
     if (race.id) {

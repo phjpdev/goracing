@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MatchCard, OddsTable } from "@/components/features/matches";
+import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
 
@@ -16,12 +17,15 @@ function todayHK() {
 
 export default function MatchesPage() {
   const { t, locale } = useLanguage();
+  const { auth } = useAuth();
+  const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
   const [selectedRace, setSelectedRace] = useState<HKJCRace | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [upgradeMessage, setUpgradeMessage] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -29,13 +33,16 @@ export default function MatchesPage() {
     setError("");
     setMeeting(null);
     setSelectedRace(null);
+    setUpgradeMessage("");
 
     fetch(`/api/races/meetings?date=${date}&venue=${venue}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: HKJCMeeting[]) => {
         const m = data?.[0] ?? null;
         setMeeting(m);
-        setSelectedRace(m?.races?.[0] ?? null);
+        const firstAllowed =
+          (m?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
+        setSelectedRace(firstAllowed);
         if (m?.date && m.date !== date) setDate(m.date);
         setLoading(false);
       })
@@ -47,7 +54,7 @@ export default function MatchesPage() {
       });
 
     return () => controller.abort();
-  }, [date, venue]);
+  }, [date, venue, isManager]);
 
   return (
     <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
@@ -80,6 +87,11 @@ export default function MatchesPage() {
 
       {/* Content area */}
       <div className="flex-1 min-h-0 mx-auto w-full max-w-[1600px] px-3 pb-4 sm:px-6 lg:px-8">
+        {upgradeMessage && (
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-amber-200 text-sm mb-3">
+            {upgradeMessage}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center gap-2 text-white/50 text-sm py-4">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
@@ -100,7 +112,14 @@ export default function MatchesPage() {
                   race={race}
                   index={i + 1}
                   isSelected={selectedRace?.id === race.id}
-                  onClick={() => setSelectedRace(race)}
+                  onClick={() => {
+                    if (race.isLocked && !isManager) {
+                      setUpgradeMessage("請升級VVIP");
+                      return;
+                    }
+                    setUpgradeMessage("");
+                    setSelectedRace(race);
+                  }}
                   meetingDate={meeting.date}
                   venueCode={meeting.venueCode}
                 />

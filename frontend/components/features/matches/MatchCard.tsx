@@ -43,8 +43,20 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
       }`}
       style={isSelected ? { background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 100%)" } : undefined}
     >
-      <h3 className="font-inter text-sm font-bold text-white mb-3">
-        {t.matches.match} {index}: {raceName}
+      <h3 className="font-inter text-sm font-bold text-white mb-3 flex items-center gap-2">
+        <span className="min-w-0 truncate">
+          {t.matches.match} {index}: {raceName}
+        </span>
+        {race.isLocked && (
+          <svg
+            aria-label="VVIP"
+            className="h-4 w-4 shrink-0 text-amber-400"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.4 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+          </svg>
+        )}
       </h3>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 font-inter text-xs">
         <dt className="text-white/50">{t.matches.frontRunnerBias}</dt>

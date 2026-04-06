@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { WinPercentage, SmartRacecard, AnalyticsPanel } from "@/components/features/races";
 import { ROUTES } from "@/lib/constants";
+import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { saveLastLandingAnalytics } from "@/lib/lastLandingAnalytics";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
@@ -89,6 +90,9 @@ function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" 
 
 export default function RaceDetailPage() {
   const { t, locale } = useLanguage();
+  const { auth } = useAuth();
+  const isManager = auth?.role === "admin" || auth?.role === "subadmin";
+  const authLoading = auth === null;
   const params = useParams();
   const searchParams = useSearchParams();
   const raceId = (params?.id as string) ?? "";
@@ -135,6 +139,7 @@ export default function RaceDetailPage() {
 
   useEffect(() => {
     if (!hkjcRace) return;
+    if (hkjcRace.isLocked && !isManager) return;
     setAnalyzing(true);
     setAiError("");
 
@@ -156,7 +161,7 @@ export default function RaceDetailPage() {
         setAiError(t.races.failedAi);
         setAnalyzing(false);
       });
-  }, [hkjcRace, retryCount]);
+  }, [hkjcRace, retryCount, isManager]);
 
   // Persist the latest race analysis for landing page visuals
   useEffect(() => {
@@ -230,6 +235,29 @@ export default function RaceDetailPage() {
         </Link>
       </div>
     );
+  }
+
+  if (hkjcRace.isLocked) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
+          <div className="flex items-center gap-3 text-white/60">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+            Loading…
+          </div>
+        </div>
+      );
+    }
+    if (!isManager) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-amber-200 text-base sm:text-lg font-inter">請升級VVIP</p>
+          <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
+            {t.races.back}
+          </Link>
+        </div>
+      );
+    }
   }
 
   const race = mapToRace(hkjcRace, locale);
