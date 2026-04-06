@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { WinPercentage, SmartRacecard, AnalyticsPanel } from "@/components/features/races";
 import { ROUTES } from "@/lib/constants";
 import { useLanguage } from "@/lib/context/LanguageContext";
+import { saveLastLandingAnalytics } from "@/lib/lastLandingAnalytics";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
 import type { Race, RacecardRow } from "@/types";
 
@@ -151,6 +152,55 @@ export default function RaceDetailPage() {
         setAnalyzing(false);
       });
   }, [hkjcRace, retryCount]);
+
+  // Persist the latest race analysis for landing page visuals
+  useEffect(() => {
+    if (!analysis || !hkjcRace) return;
+
+    const topPick = analysis?.topPicks?.[0];
+    const pedigreeValues = topPick
+      ? [topPick.surface, topPick.speed, topPick.class, topPick.distance, topPick.form]
+      : [0, 0, 0, 0, 0];
+    const radarLabels = ["Surface", "Speed", "Class", "Distance", "Form"];
+
+    const bars = analysis.topPicks
+      .slice(0, 4)
+      .map((p) => Math.max(0, Math.min(100, parseFloat(p.winPct) || 0)));
+
+    const donutSegments = analysis.topPicks
+      .slice(1, 5)
+      .map((p) => Math.max(0, Math.min(100, parseFloat(p.winPct) || 0)));
+
+    const marketPoints = analysis.topPicks
+      .map((pick) => {
+        const runner = hkjcRace.runners?.find((r) => r.no === pick.no);
+        const odds = parseFloat(runner?.winOdds ?? "0") || 0;
+        const winProb = parseFloat(pick.winPct) || 0;
+        const impliedProb = odds > 0 ? (1 / odds) * 100 : 0;
+        const diff = winProb - impliedProb;
+        const trend: "dropping" | "drifting" | "stable" = diff > 3 ? "dropping" : diff < -3 ? "drifting" : "stable";
+        return { winProb, odds, trend };
+      })
+      .filter((p) => p.odds > 0 && p.winProb > 0);
+
+    saveLastLandingAnalytics({
+      race: {
+        id: hkjcRace.id,
+        date,
+        venue,
+        raceNumber: String(hkjcRace.no),
+        name: hkjcRace.raceName_en || hkjcRace.raceName_ch || undefined,
+      },
+      charts: {
+        bars,
+        pedigreeValues,
+        radarLabels,
+        marketPoints,
+        overallWinPct: analysis.overallWinPct,
+        donutSegments,
+      },
+    });
+  }, [analysis, hkjcRace, date, venue]);
 
   // Loading states
   if (loading) {
