@@ -39,14 +39,31 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
 
   const data = points && points.length > 0 ? points : defaultPoints;
   const maxX = Math.ceil(Math.max(...data.map((p) => p.winProb)) / 5) * 5 + 5;
-  const maxY = Math.ceil(Math.max(...data.map((p) => p.odds)) / 5) * 5;
+
+  const oddsSorted = [...data.map((p) => p.odds)].sort((a, b) => a - b);
+  const quantile = (q: number) => {
+    if (oddsSorted.length === 0) return 0;
+    const pos = (oddsSorted.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    const next = oddsSorted[Math.min(base + 1, oddsSorted.length - 1)] ?? oddsSorted[base] ?? 0;
+    const cur = oddsSorted[base] ?? 0;
+    return cur + (next - cur) * rest;
+  };
+
+  const rawMaxY = Math.max(...data.map((p) => p.odds));
+  const p90 = quantile(0.9);
+  const capCandidate = p90 > 0 ? p90 * 1.35 : rawMaxY;
+  const cappedMaxY = rawMaxY > capCandidate * 1.25 ? capCandidate : rawMaxY;
+  const maxY = Math.max(10, Math.ceil(cappedMaxY / 5) * 5);
 
   const sx = (v: number) => pad.left + (v / maxX) * plotW;
   const sy = (v: number) => pad.top + plotH - (v / maxY) * plotH;
   const bottomY = pad.top + plotH;
 
   const xTicks = Array.from({ length: Math.floor(maxX / 5) }, (_, i) => (i + 1) * 5);
-  const yTicks = Array.from({ length: maxY / 5 + 1 }, (_, i) => i * 5);
+  const yStep = maxY >= 60 ? 10 : 5;
+  const yTicks = Array.from({ length: Math.floor(maxY / yStep) + 1 }, (_, i) => i * yStep);
 
   const colorMap: Record<string, { fill: string; glow: string }> = {
     dropping: { fill: "#28E88E", glow: "rgba(40,232,142,0.4)" },
@@ -91,7 +108,9 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
         {/* Dots — use translateY for rise animation */}
         {data.map((p, i) => {
           const s = getSize(p.winProb);
-          const targetY = sy(p.odds);
+          const clamped = p.odds > maxY;
+          const oddsForPlot = clamped ? maxY : p.odds;
+          const targetY = sy(oddsForPlot);
           const riseDistance = bottomY - targetY;
           const delay = 0.4 + i * 0.15;
 
@@ -117,6 +136,14 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
                 r={s}
                 fill={colorMap[p.trend].fill}
               />
+              {clamped && (
+                <g opacity={0.95}>
+                  <path
+                    d={`M ${sx(p.winProb)} ${pad.top + 4} L ${sx(p.winProb) - 4} ${pad.top + 11} L ${sx(p.winProb) + 4} ${pad.top + 11} Z`}
+                    fill="rgba(255,255,255,0.55)"
+                  />
+                </g>
+              )}
             </g>
           );
         })}
