@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { HKJCRace } from "@/types/race-meeting";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 const RACE_HORSE = "/assets/race-horse.png";
 const RACE_VECTOR = "/assets/race-vector.png";
@@ -27,6 +28,9 @@ type RaceDetailPanelProps = {
 };
 
 export function RaceDetailPanel({ race }: RaceDetailPanelProps) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh-TW";
+
   if (!race) {
     return (
       <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 sm:p-5 lg:p-6 shadow-xl min-w-0 flex items-center justify-center min-h-[300px]">
@@ -54,16 +58,17 @@ export function RaceDetailPanel({ race }: RaceDetailPanelProps) {
           </div>
           <div className="min-w-0">
             <h2 className="font-inter text-base sm:text-lg font-bold text-white truncate">
-              {race.raceName_en || `Race ${race.no}`}
+              {(isZh ? race.raceName_ch || race.raceName_en : race.raceName_en || race.raceName_ch) || `Race ${race.no}`}
             </h2>
             <p className="font-inter text-xs sm:text-sm text-white/60 mt-0.5">
-              Race {race.no} · {race.distance}m · {race.raceClass_en}
+              {(isZh ? `第 ${race.no} 場` : `Race ${race.no}`)} · {race.distance}m · {(isZh ? race.raceClass_ch || race.raceClass_en : race.raceClass_en || race.raceClass_ch)}
             </p>
           </div>
         </div>
         <div className="shrink-0">
           <span className="font-inter text-xs text-white/50">
-            {race.raceCourse?.description_en} · {race.raceTrack?.description_en}
+            {(isZh ? race.raceCourse?.description_ch || race.raceCourse?.description_en : race.raceCourse?.description_en || race.raceCourse?.description_ch)} ·{" "}
+            {(isZh ? race.raceTrack?.description_ch || race.raceTrack?.description_en : race.raceTrack?.description_en || race.raceTrack?.description_ch)}
           </span>
         </div>
       </div>
@@ -102,10 +107,10 @@ export function RaceDetailPanel({ race }: RaceDetailPanelProps) {
                   </span>
                   <div className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
                     <span className="font-sans font-medium text-[14px] sm:text-[16px] leading-[1.3] text-white truncate">
-                      {runner.name_en}
+                      {(isZh ? runner.name_ch || runner.name_en : runner.name_en || runner.name_ch) || runner.name_en}
                     </span>
                     <p className="font-inter font-normal text-[11px] sm:text-[12px] leading-[1.3] text-[#FFFFFF80] whitespace-nowrap truncate">
-                      {runner.jockey.name_en}
+                      {(isZh ? runner.jockey.name_ch || runner.jockey.name_en : runner.jockey.name_en || runner.jockey.name_ch) || runner.jockey.name_en}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">

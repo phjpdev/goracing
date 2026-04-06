@@ -1,11 +1,13 @@
 export type HKJCJockey = {
   code: string;
   name_en: string;
+  name_ch?: string;
 };
 
 export type HKJCTrainer = {
   code: string;
   name_en: string;
+  name_ch?: string;
 };
 
 export type HKJCRunner = {
@@ -34,10 +36,12 @@ export type HKJCRace = {
   distance: number;
   wageringFieldSize: number;
   go_en: string;
+  go_ch?: string;
   ratingType: string;
-  raceTrack: { description_en: string };
-  raceCourse: { description_en: string; displayCode: string };
+  raceTrack: { description_en: string; description_ch?: string };
+  raceCourse: { description_en: string; description_ch?: string; displayCode: string };
   raceClass_en: string;
+  raceClass_ch?: string;
   runners: HKJCRunner[];
 };
 

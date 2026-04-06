@@ -6,16 +6,16 @@ import { useLanguage } from "@/lib/context/LanguageContext";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
 
 const VENUES = [
-  { code: "ST", label: "Sha Tin" },
-  { code: "HV", label: "Happy Valley" },
-];
+  { code: "ST", labelEn: "Sha Tin", labelZh: "沙田" },
+  { code: "HV", labelEn: "Happy Valley", labelZh: "跑馬地" },
+] as const;
 
 function todayHK() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Hong_Kong" });
 }
 
 export default function MatchesPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
@@ -66,7 +66,7 @@ export default function MatchesPage() {
                     : "bg-[#1a1a1a] border border-white/10 text-white/70 hover:text-white"
                 }`}
               >
-                {v.label}
+                {locale === "zh-TW" ? v.labelZh : v.labelEn}
               </button>
             ))}
           </div>

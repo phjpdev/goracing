@@ -23,7 +23,13 @@ function formatTime(isoString: string) {
 }
 
 export function MatchCard({ race, index, isSelected, onClick, meetingDate, venueCode }: MatchCardProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isZh = locale === "zh-TW";
+  const raceName = (isZh ? race.raceName_ch || race.raceName_en : race.raceName_en || race.raceName_ch) || `Race ${race.no}`;
+  const track = isZh ? race.raceTrack?.description_ch || race.raceTrack?.description_en : race.raceTrack?.description_en || race.raceTrack?.description_ch;
+  const going = (isZh ? race.go_ch || race.go_en : race.go_en || race.go_ch) || "-";
+  const raceClass = (isZh ? race.raceClass_ch || race.raceClass_en : race.raceClass_en || race.raceClass_ch) || "-";
+
   return (
     <div
       role="button"
@@ -38,7 +44,7 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
       style={isSelected ? { background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 100%)" } : undefined}
     >
       <h3 className="font-inter text-sm font-bold text-white mb-3">
-        {t.matches.match} {index}: {race.raceName_en || `Race ${race.no}`}
+        {t.matches.match} {index}: {raceName}
       </h3>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 font-inter text-xs">
         <dt className="text-white/50">{t.matches.frontRunnerBias}</dt>
@@ -46,14 +52,19 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
 
         <dt className="text-white/50">{t.matches.class}</dt>
         <dd className="text-right text-white font-medium">
-          {race.distance ? `${race.distance}` : "-"} {race.raceTrack?.description_en || "Turf"}
+          {raceClass}
         </dd>
 
         <dt className="text-white/50">{t.matches.track}</dt>
-        <dd className="text-right text-[#28E88E] font-medium">{race.go_en || "-"}</dd>
+        <dd className="text-right text-[#28E88E] font-medium">{going}</dd>
 
         <dt className="text-white/50">{t.matches.duration}</dt>
         <dd className="text-right text-white font-medium">{formatTime(race.postTime)}</dd>
+
+        <dt className="text-white/50">{t.matches.horse}</dt>
+        <dd className="text-right text-white/80 font-medium">
+          {race.distance ? `${race.distance}m` : "-"} {track || (isZh ? "草地" : "Turf")}
+        </dd>
 
         <dt className="text-white/50">{t.matches.winRate}</dt>
         <dd className="text-right">

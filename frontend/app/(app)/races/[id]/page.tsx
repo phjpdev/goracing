@@ -41,20 +41,24 @@ function formatTime(iso: string) {
   });
 }
 
-function mapToRace(hkjcRace: HKJCRace): Race {
+function mapToRace(hkjcRace: HKJCRace, locale: "zh-TW" | "en"): Race {
+  const isZh = locale === "zh-TW";
   const runners = hkjcRace.runners?.filter((r) => r.status !== "Scratched") ?? [];
   const odds = runners.map((r) => parseFloat(r.winOdds)).filter((o) => !isNaN(o));
   const minOdds = odds.length > 0 ? Math.min(...odds) : 0;
   const maxOdds = odds.length > 0 ? Math.max(...odds) : 0;
 
+  const course = isZh ? hkjcRace.raceCourse?.description_ch || hkjcRace.raceCourse?.description_en : hkjcRace.raceCourse?.description_en;
+  const track = isZh ? hkjcRace.raceTrack?.description_ch || hkjcRace.raceTrack?.description_en : hkjcRace.raceTrack?.description_en;
+
   return {
     id: hkjcRace.id,
     raceNumber: hkjcRace.no,
-    name: hkjcRace.raceName_en || `Race ${hkjcRace.no}`,
-    venue: `${hkjcRace.raceCourse?.description_en || ""} ${hkjcRace.raceTrack?.description_en || ""}`.trim(),
+    name: (isZh ? hkjcRace.raceName_ch || hkjcRace.raceName_en : hkjcRace.raceName_en || hkjcRace.raceName_ch) || `Race ${hkjcRace.no}`,
+    venue: `${course || ""} ${track || ""}`.trim(),
     time: formatTime(hkjcRace.postTime),
     distance: `${hkjcRace.distance}m`,
-    going: hkjcRace.go_en || "-",
+    going: (isZh ? hkjcRace.go_ch || hkjcRace.go_en : hkjcRace.go_en || hkjcRace.go_ch) || "-",
     status: hkjcRace.status === "RESULTED" ? "FINISHED" : hkjcRace.status === "GOING" ? "LIVE" : "UPCOMING",
     prizePool: "-",
     fieldSize: `${runners.length} Horses`,
@@ -63,17 +67,18 @@ function mapToRace(hkjcRace: HKJCRace): Race {
   };
 }
 
-function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace): RacecardRow[] {
+function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" | "en"): RacecardRow[] {
+  const isZh = locale === "zh-TW";
   return picks.map((pick, idx) => {
     const runner = hkjcRace.runners?.find((r) => r.no === pick.no);
     return {
       rank: idx + 1,
-      horse: pick.name,
+      horse: (isZh ? runner?.name_ch || runner?.name_en : runner?.name_en || runner?.name_ch) || pick.name,
       age: "-",
       sire: pick.analysis,
-      jockey: runner?.jockey?.name_en ?? "-",
-      trainer: runner?.trainer?.name_en ?? "-",
-      turf: hkjcRace.raceCourse?.description_en ?? "-",
+      jockey: (isZh ? runner?.jockey?.name_ch || runner?.jockey?.name_en : runner?.jockey?.name_en || runner?.jockey?.name_ch) ?? "-",
+      trainer: (isZh ? runner?.trainer?.name_ch || runner?.trainer?.name_en : runner?.trainer?.name_en || runner?.trainer?.name_ch) ?? "-",
+      turf: (isZh ? hkjcRace.raceCourse?.description_ch || hkjcRace.raceCourse?.description_en : hkjcRace.raceCourse?.description_en || hkjcRace.raceCourse?.description_ch) ?? "-",
       speed: pick.speed,
       class: pick.class,
       winPct: pick.winPct,
@@ -83,7 +88,7 @@ function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace): RacecardRow[] {
 }
 
 export default function RaceDetailPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const params = useParams();
   const searchParams = useSearchParams();
   const raceId = (params?.id as string) ?? "";
@@ -227,8 +232,8 @@ export default function RaceDetailPage() {
     );
   }
 
-  const race = mapToRace(hkjcRace);
-  const racecard = analysis ? mapToRacecard(analysis.topPicks, hkjcRace) : [];
+  const race = mapToRace(hkjcRace, locale);
+  const racecard = analysis ? mapToRacecard(analysis.topPicks, hkjcRace, locale) : [];
   const top4 = racecard.slice(0, 4);
 
   // Pedigree values from top pick
@@ -280,7 +285,9 @@ export default function RaceDetailPage() {
               <Image src={RACE_HORSE} alt="" width={40} height={40} className="h-10 w-10 object-contain" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-inter text-base sm:text-[18px] text-white/70 leading-tight">Race {race.raceNumber}</p>
+              <p className="font-inter text-base sm:text-[18px] text-white/70 leading-tight">
+                {locale === "zh-TW" ? `第 ${race.raceNumber} 場` : `Race ${race.raceNumber}`}
+              </p>
               <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
                 {race.name}
               </h1>
@@ -305,7 +312,7 @@ export default function RaceDetailPage() {
               className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
               style={{ padding: "6px 12px", background: "#0d0d0d" }}
             >
-              {race.status}
+              {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
             </span>
           </span>
         </section>
