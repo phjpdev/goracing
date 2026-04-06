@@ -112,7 +112,12 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <span className="block font-inter font-semibold text-[12px] sm:text-sm text-white leading-snug break-words">
-                    {row.horse}
+                    <span className="inline-flex items-center gap-2">
+                      <span className="inline-flex h-5 min-w-[26px] items-center justify-center rounded-md bg-white/10 text-white/90 text-[10px] font-bold">
+                        {row.horseNo}
+                      </span>
+                      <span className="break-words">{row.horse}</span>
+                    </span>
                   </span>
                   <div className="mt-1 flex items-center justify-between gap-3">
                     <span className="font-inter text-[10px] sm:text-[11px] text-white/50 leading-tight whitespace-nowrap">

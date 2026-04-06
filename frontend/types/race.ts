@@ -15,6 +15,7 @@ export type Race = {
 
 export type RacecardRow = {
   rank: number;
+  horseNo: string;
   horse: string;
   age: string;
   sire: string;

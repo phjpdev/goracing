@@ -74,6 +74,7 @@ function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" 
     const runner = hkjcRace.runners?.find((r) => r.no === pick.no);
     return {
       rank: idx + 1,
+      horseNo: runner?.no ?? pick.no,
       horse: (isZh ? runner?.name_ch || runner?.name_en : runner?.name_en || runner?.name_ch) || pick.name,
       age: "-",
       sire: pick.analysis,

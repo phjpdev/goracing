@@ -47,7 +47,12 @@ export function SmartRacecard({ racecard }: SmartRacecardProps) {
                 </td>
                 <td className="align-middle py-2.5 pr-2 sm:py-3 sm:pr-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-white">{row.horse}</p>
+                    <p className="font-medium text-white flex items-center gap-2 min-w-0">
+                      <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded-md bg-white/10 text-white/90 text-[11px] font-bold">
+                        {row.horseNo}
+                      </span>
+                      <span className="min-w-0 truncate">{row.horse}</span>
+                    </p>
                     <p className="text-white/50 text-[10px] sm:text-xs mt-0.5 line-clamp-2">
                       {row.sire}
                     </p>

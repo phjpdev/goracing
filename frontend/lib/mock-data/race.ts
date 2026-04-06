@@ -18,6 +18,7 @@ export const MOCK_RACE: Race = {
 export const MOCK_RACECARD: RacecardRow[] = [
   {
     rank: 1,
+    horseNo: "1",
     horse: "Golden Arrow",
     age: "5yo",
     sire: "Dubwai",
@@ -31,6 +32,7 @@ export const MOCK_RACECARD: RacecardRow[] = [
   },
   {
     rank: 2,
+    horseNo: "2",
     horse: "Silver Bolt",
     age: "4yo",
     sire: "Frankel",
@@ -44,6 +46,7 @@ export const MOCK_RACECARD: RacecardRow[] = [
   },
   {
     rank: 3,
+    horseNo: "3",
     horse: "Storm Runner",
     age: "6yo",
     sire: "Galileo",
@@ -57,6 +60,7 @@ export const MOCK_RACECARD: RacecardRow[] = [
   },
   {
     rank: 4,
+    horseNo: "4",
     horse: "Thunder Strike",
     age: "5yo",
     sire: "Sea The Stars",
@@ -70,6 +74,7 @@ export const MOCK_RACECARD: RacecardRow[] = [
   },
   {
     rank: 5,
+    horseNo: "5",
     horse: "Wind Dancer",
     age: "4yo",
     sire: "Kingman",
@@ -83,6 +88,7 @@ export const MOCK_RACECARD: RacecardRow[] = [
   },
   {
     rank: 6,
+    horseNo: "6",
     horse: "Night Shadow",
     age: "5yo",
     sire: "Camelot",
