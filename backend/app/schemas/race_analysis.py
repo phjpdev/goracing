@@ -21,3 +21,7 @@ class RaceAnalysisResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class RaceAnalysisTop4Update(BaseModel):
+    top4: list[str]

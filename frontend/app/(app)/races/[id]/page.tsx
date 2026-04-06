@@ -93,6 +93,7 @@ export default function RaceDetailPage() {
   const { t, locale } = useLanguage();
   const { auth } = useAuth();
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
+  const isAdmin = auth?.role === "admin";
   const authLoading = auth === null;
   const params = useParams();
   const searchParams = useSearchParams();
@@ -264,6 +265,7 @@ export default function RaceDetailPage() {
   const race = mapToRace(hkjcRace, locale);
   const racecard = analysis ? mapToRacecard(analysis.topPicks, hkjcRace, locale) : [];
   const top4 = racecard.slice(0, 4);
+  const editHref = isAdmin && date && venue ? `/admin/races/${raceId}/edit?date=${date}&venue=${venue}` : undefined;
 
   // Pedigree values from top pick
   const topPick = analysis?.topPicks?.[0];
@@ -373,7 +375,7 @@ export default function RaceDetailPage() {
         {/* Win Percentage + Smart Racecard — side by side */}
         {analysis && racecard.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-[30%_calc(70%-1.5rem)] gap-4 sm:gap-6">
-            <WinPercentage racecard={top4} />
+            <WinPercentage racecard={top4} editHref={editHref} />
             <div className="hidden lg:block">
               <SmartRacecard racecard={racecard} />
             </div>
