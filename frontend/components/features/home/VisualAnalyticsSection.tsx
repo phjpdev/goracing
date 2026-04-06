@@ -51,38 +51,37 @@ export function VisualAnalyticsSection() {
   const donutSegments = saved?.charts.donutSegments?.length ? saved.charts.donutSegments : [20, 15, 12, 10];
   const marketPoints = saved?.charts.marketPoints?.length ? saved.charts.marketPoints : undefined;
 
-  const items: { title: string; description: string; graphic: ReactNode }[] = [
+  const items: { id: "radar" | "donut" | "market"; title: string; description: string; graphic: ReactNode }[] = [
     {
+      id: "radar",
       title: t.races.pedigreeAnalysis,
       description: t.visualAnalytics.pedigreeDesc,
       graphic: (
-        <div key={`radar-${replayToken}`} className="flex h-full w-full items-center justify-center p-4">
-          <div className="w-full max-w-[260px] aspect-square sm:max-w-[300px]">
-            <PedigreeRadarChart values={pedigreeValues} labels={radarLabels} />
-          </div>
+        <div className="w-full max-w-[228px] aspect-square p-2 sm:max-w-[268px] sm:p-3">
+          <PedigreeRadarChart values={pedigreeValues} labels={radarLabels} />
         </div>
       ),
     },
     {
+      id: "donut",
       title: t.races.aiWinProbability,
       description: t.races.winChance,
       graphic: (
-        <div key={`donut-${replayToken}`} className="flex h-full w-full items-center justify-center p-4">
-          <div className="w-full max-w-[280px] aspect-square sm:max-w-[320px]">
-            <AIWinDonutChart winPct={winPct} otherSegments={donutSegments} />
-          </div>
+        <div className="w-full max-w-[238px] aspect-square p-2 sm:max-w-[288px] sm:p-3">
+          <AIWinDonutChart winPct={winPct} otherSegments={donutSegments} />
         </div>
       ),
     },
     {
+      id: "market",
       title: t.races.marketActivity,
       description: t.visualAnalytics.marketActivityDesc,
       graphic: (
-        <div key={`market-${replayToken}`} className="flex h-full w-full flex-col items-center justify-center p-4">
-          <div className="w-full max-w-[320px]">
+        <div className="flex w-full flex-col items-center justify-center">
+          <div className="w-full max-w-[268px] p-1.5 sm:max-w-[288px] sm:p-2">
             <MarketActivityChart points={marketPoints} />
           </div>
-          <div className="mt-3 flex flex-wrap justify-center gap-3 font-inter text-[11px] text-white/80">
+          <div className="mt-2 sm:mt-3 flex flex-wrap justify-center gap-3 sm:gap-6 font-inter text-[11px] text-white/80">
             <span className="inline-flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#28E88E]" />
               {t.races.oddsDropping}
@@ -113,11 +112,16 @@ export function VisualAnalyticsSection() {
       </div>
       <div className="mt-10 sm:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {items.map((item) => (
-          <article key={item.title} className={ANALYTICS_CARD_CLASS}>
-            <div className="relative h-[220px] sm:h-[260px] w-full">
-              {item.graphic}
+          <article key={item.id} className={`${ANALYTICS_CARD_CLASS} flex flex-col`}>
+            <div className="relative h-[232px] sm:h-[272px] w-full">
+              <div
+                key={`${item.id}-${replayToken}`}
+                className="absolute inset-0 flex items-center justify-center px-5 pt-6 pb-5 sm:px-6 sm:pt-7 sm:pb-6 lg:px-7 lg:pt-8 lg:pb-7"
+              >
+                {item.graphic}
+              </div>
             </div>
-            <div className="p-5 lg:p-6">
+            <div className="px-5 pb-5 sm:px-6 sm:pb-6 lg:px-7 lg:pb-7">
               <h3 className="text-[18px] font-semibold leading-[1.3] text-white">{item.title}</h3>
               <p className="mt-2 font-inter text-[14px] leading-[1.6] text-white/50">{item.description}</p>
             </div>
