@@ -59,7 +59,7 @@ export function VisualAnalyticsSection() {
       title: t.races.aiWinProbability,
       description: t.races.winChance,
       graphic: (
-        <div className="w-full max-w-[238px] aspect-square p-2 sm:max-w-[288px] sm:p-3">
+        <div className="w-full max-w-[270px] aspect-square p-1.5 sm:max-w-[308px] sm:p-2.5">
           <AIWinDonutChart winPct={winPct} otherSegments={donutSegments} />
         </div>
       ),
@@ -115,17 +115,17 @@ export function VisualAnalyticsSection() {
       <div className="mt-10 sm:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {items.map((item) => (
           <article key={item.id} className={`${ANALYTICS_CARD_CLASS} flex flex-col`}>
-            <div className="relative h-[232px] sm:h-[272px] w-full">
+            <div className="relative h-[260px] sm:h-[292px] w-full">
               <div
                 key={`${item.id}-${replayToken}`}
-                className="absolute inset-0 flex items-center justify-center px-5 pt-6 pb-5 sm:px-6 sm:pt-7 sm:pb-6 lg:px-7 lg:pt-8 lg:pb-7"
+                className="absolute inset-0 flex items-center justify-center px-3 pt-4 pb-3 sm:px-6 sm:pt-7 sm:pb-6 lg:px-7 lg:pt-8 lg:pb-7"
               >
                 {item.graphic}
               </div>
             </div>
-            <div className="px-5 pb-5 sm:px-6 sm:pb-6 lg:px-7 lg:pb-7">
-              <h3 className="text-[18px] font-semibold leading-[1.3] text-white">{item.title}</h3>
-              <p className="mt-2 font-inter text-[14px] leading-[1.6] text-white/50">{item.description}</p>
+            <div className="px-5 pb-4 sm:px-6 sm:pb-6 lg:px-7 lg:pb-7">
+              <h3 className="text-[16px] sm:text-[18px] font-semibold leading-[1.3] text-white">{item.title}</h3>
+              <p className="mt-1.5 font-inter text-[12.5px] sm:text-[14px] leading-[1.6] text-white/50">{item.description}</p>
             </div>
           </article>
         ))}

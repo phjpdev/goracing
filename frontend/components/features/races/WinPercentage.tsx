@@ -86,7 +86,7 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
       <div className="relative flex items-center gap-0">
         {/* Track visual */}
         <div
-          className="relative -ml-1 sm:-ml-5 lg:-ml-6 shrink-0 w-[200px] sm:w-[230px] lg:w-[220px]"
+          className="relative -ml-4 sm:-ml-5 lg:-ml-6 shrink-0 w-[200px] sm:w-[230px] lg:w-[220px]"
           style={{ animation: "track-breathe 3s ease-in-out infinite" }}
         >
           <Image
@@ -111,7 +111,13 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
         </div>
 
         {/* Horse cards */}
-        <div className="flex flex-col gap-2 sm:gap-3 min-w-0 flex-1">
+        <div
+          className="
+            absolute top-0 bottom-0 right-0 left-[136px] max-[420px]:left-[120px]
+            flex flex-col justify-center gap-2 sm:gap-3
+            sm:static sm:left-auto sm:right-auto sm:top-auto sm:bottom-auto sm:justify-start sm:flex-1 sm:min-w-0
+          "
+        >
           {top4.map((row, idx) => (
             <div
               key={row.rank}
@@ -127,12 +133,14 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
                   {POSITION_LABELS[idx + 1]}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <span className="block font-inter font-semibold text-[12px] sm:text-sm text-white leading-snug break-words">
-                    <span className="inline-flex items-center gap-2">
+                  <span className="block font-inter font-semibold text-[12px] sm:text-sm text-white leading-snug">
+                    <span className="flex items-start gap-2 min-w-0">
                       <span className="inline-flex h-5 min-w-[26px] items-center justify-center rounded-md bg-white/10 text-white/90 text-[10px] font-bold">
                         {row.horseNo}
                       </span>
-                      <span className="break-words">{row.horse}</span>
+                      <span className="min-w-0 whitespace-normal break-normal line-clamp-2 leading-tight">
+                        {row.horse}
+                      </span>
                     </span>
                   </span>
                   <div className="mt-1 flex items-center justify-between gap-3">
