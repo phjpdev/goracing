@@ -80,6 +80,7 @@ export const zhTW = {
     smartRacecard: "智能馬卡",
     winPercentage: "勝率分析",
     goldHighlight: "精選推介",
+    loadingRaceData: "載入賽事資料中…",
     rank: "排名",
     jockey: "騎師",
     trainer: "練馬師",

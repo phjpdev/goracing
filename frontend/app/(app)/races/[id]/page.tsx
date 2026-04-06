@@ -226,7 +226,7 @@ export default function RaceDetailPage() {
       <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
         <div className="flex items-center gap-3 text-white/60">
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
-          Loading race data…
+          {t.races.loadingRaceData}
         </div>
       </div>
     );

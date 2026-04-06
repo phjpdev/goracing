@@ -82,6 +82,7 @@ export const en: TranslationKeys = {
     smartRacecard: "Smart Racecard",
     winPercentage: "Win Percentage",
     goldHighlight: "Gold Highlight",
+    loadingRaceData: "Loading race data…",
     rank: "Rank",
     jockey: "Jockey",
     trainer: "Trainer",
