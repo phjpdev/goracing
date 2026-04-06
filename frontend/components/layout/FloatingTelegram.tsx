@@ -4,8 +4,9 @@ import { useAuth } from "@/lib/context/AuthContext";
 
 export function FloatingTelegram() {
   const { auth } = useAuth();
-  const hideForMember = auth?.authenticated && auth.role === "member";
-  if (hideForMember) return null;
+  // Hide when not logged in (landing/login/signup) and for members.
+  if (!auth?.authenticated) return null;
+  if (auth.role === "member") return null;
 
   return (
     <>

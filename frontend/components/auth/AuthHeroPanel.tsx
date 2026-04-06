@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { LogoCompact } from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
 const AUTH_IMAGE = "/assets/auth-page.png";
@@ -24,7 +23,6 @@ export function AuthHeroPanel() {
         <div className="absolute inset-0" style={{ background: HERO_GRADIENT }} />
       </div>
       <div className="absolute bottom-6 left-4 right-4 sm:bottom-8 sm:left-6 sm:right-6 lg:bottom-28 lg:left-20 lg:right-20 z-10">
-        <LogoCompact className="mb-4 sm:mb-5" />
         <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-medium leading-[1.2] text-white mb-2 sm:mb-3">
           {t.hero.title}
         </h1>

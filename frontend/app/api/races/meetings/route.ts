@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import redis from "@/lib/redis";
 
-const CACHE_TTL = 300; // 5 minutes
+const CACHE_TTL = 60; // 1 minute (HKJC data changes frequently)
 const LOCKED_TTL = 60 * 60 * 24 * 7; // 7 days
 
 const HKJC_URL = "https://info.cld.hkjc.com/graphql/base/";
@@ -209,7 +209,7 @@ async function fetchHKJC(variables: Record<string, string>) {
       query: QUERY,
       variables,
     }),
-    next: { revalidate: 60 },
+    cache: "no-store",
   });
   return res.json();
 }

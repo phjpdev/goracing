@@ -119,7 +119,11 @@ export default function RaceDetailPage() {
     }
 
     fetch(`/api/races/meetings?date=${date}&venue=${venue}`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json().catch(() => null);
+        if (!r.ok) throw new Error(data?.error ?? "Failed to fetch race meetings");
+        return data as HKJCMeeting[];
+      })
       .then((meetings: HKJCMeeting[]) => {
         for (const m of meetings) {
           const found = m.races?.find((r) => r.id === raceId);
