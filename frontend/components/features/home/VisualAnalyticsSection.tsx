@@ -53,22 +53,22 @@ export function VisualAnalyticsSection() {
 
   const items: { id: "radar" | "donut" | "market"; title: string; description: string; graphic: ReactNode }[] = [
     {
-      id: "radar",
-      title: t.races.pedigreeAnalysis,
-      description: t.visualAnalytics.pedigreeDesc,
-      graphic: (
-        <div className="w-full max-w-[228px] aspect-square p-2 sm:max-w-[268px] sm:p-3">
-          <PedigreeRadarChart values={pedigreeValues} labels={radarLabels} />
-        </div>
-      ),
-    },
-    {
       id: "donut",
       title: t.races.aiWinProbability,
       description: t.races.winChance,
       graphic: (
         <div className="w-full max-w-[238px] aspect-square p-2 sm:max-w-[288px] sm:p-3">
           <AIWinDonutChart winPct={winPct} otherSegments={donutSegments} />
+        </div>
+      ),
+    },
+    {
+      id: "radar",
+      title: t.races.pedigreeAnalysis,
+      description: t.visualAnalytics.pedigreeDesc,
+      graphic: (
+        <div className="w-full max-w-[228px] aspect-square p-2 sm:max-w-[268px] sm:p-3">
+          <PedigreeRadarChart values={pedigreeValues} labels={radarLabels} />
         </div>
       ),
     },
