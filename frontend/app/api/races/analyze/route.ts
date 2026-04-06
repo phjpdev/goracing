@@ -164,7 +164,9 @@ export async function POST(request: NextRequest) {
     // 1. Check PostgreSQL cache via backend API
     if (race.id) {
       try {
-        const cacheRes = await fetch(`${BACKEND_URL}/api/v1/analyses/${race.id}`);
+        const cacheRes = await fetch(`${BACKEND_URL}/api/v1/analyses/${race.id}`, {
+          cache: "no-store",
+        });
         if (cacheRes.ok) {
           const cached = await cacheRes.json();
           console.log(`[ANALYZE] Cache hit for ${race.id}`);

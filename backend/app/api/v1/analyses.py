@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.api.deps import get_db, require_admin
 from app.models.user import User
@@ -71,7 +72,9 @@ async def update_analysis_top4(
     if not analysis:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Analysis not found")
 
-    payload = analysis.analysis_json or {}
+    # NOTE: JSONB columns are not mutable-tracked by default.
+    # Always work on a fresh dict and flag as modified before commit.
+    payload = dict(analysis.analysis_json or {})
     picks = payload.get("topPicks")
     if not isinstance(picks, list) or len(picks) == 0:
         raise HTTPException(
@@ -79,43 +82,61 @@ async def update_analysis_top4(
             detail="Analysis is missing topPicks",
         )
 
-    # Map pick by horse number (as string)
-    by_no: dict[str, dict] = {}
-    for p in picks:
-        if isinstance(p, dict) and "no" in p:
-            by_no[str(p["no"])] = p
+    # Keep original winPct/metrics per rank.
+    # We only swap the horse numbers into slots 1-4 (0-3),
+    # so the displayed percentages remain the original ones.
+    top4_str = [str(n) for n in top4]
 
-    missing = [n for n in top4 if str(n) not in by_no]
+    index_by_no: dict[str, int] = {}
+    for idx, p in enumerate(picks):
+        if isinstance(p, dict) and "no" in p:
+            index_by_no[str(p["no"])] = idx
+
+    missing = [n for n in top4_str if n not in index_by_no]
     if missing:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid horse numbers: {', '.join(missing)}",
         )
 
-    top4_str = [str(n) for n in top4]
-    reordered = [by_no[n] for n in top4_str]
-
-    # Keep remaining picks in their original order
-    for p in picks:
-        if not isinstance(p, dict) or "no" not in p:
+    # Swap horse numbers so we never create duplicates.
+    for slot_idx in range(min(4, len(picks))):
+        p_slot = picks[slot_idx]
+        if not isinstance(p_slot, dict) or "no" not in p_slot:
             continue
-        n = str(p["no"])
-        if n in top4_str:
-            continue
-        reordered.append(p)
 
-    payload["topPicks"] = reordered
+        desired_no = top4_str[slot_idx]
+        current_no = str(p_slot["no"])
+        if current_no == desired_no:
+            continue
+
+        swap_idx = index_by_no.get(desired_no)
+        if swap_idx is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid horse numbers: {desired_no}",
+            )
+
+        p_swap = picks[swap_idx]
+        if not isinstance(p_swap, dict) or "no" not in p_swap:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Analysis has invalid topPicks entries",
+            )
+
+        # Perform swap
+        p_slot["no"] = desired_no
+        p_swap["no"] = current_no
+
+        # Update indices after swap
+        index_by_no[desired_no] = slot_idx
+        index_by_no[current_no] = swap_idx
+
+    payload["topPicks"] = picks
     payload["manualTop4"] = top4_str
 
-    # Align overallWinPct with the new top pick, if possible
-    try:
-        wp = str(reordered[0].get("winPct", "")).replace("%", "").strip()
-        payload["overallWinPct"] = float(wp)
-    except Exception:
-        # Leave as-is if parsing fails
-        pass
-
     analysis.analysis_json = payload
+    flag_modified(analysis, "analysis_json")
     await db.commit()
     await db.refresh(analysis)
     return analysis
