@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { WinPercentage, SmartRacecard, AnalyticsPanel } from "@/components/features/races";
 import { ROUTES } from "@/lib/constants";
@@ -95,6 +96,7 @@ export default function RaceDetailPage() {
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const isAdmin = auth?.role === "admin";
   const authLoading = auth === null;
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const raceId = (params?.id as string) ?? "";
@@ -335,19 +337,39 @@ export default function RaceDetailPage() {
               </p>
             </div>
           </div>
-          <span
-            className="inline-flex shrink-0 items-center justify-center self-start rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] sm:self-center"
-            style={{
-              background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
-            }}
-          >
-            <span
-              className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-              style={{ padding: "6px 12px", background: "#0d0d0d" }}
+          {editHref ? (
+            <button
+              type="button"
+              onClick={() => router.push(editHref)}
+              className="inline-flex shrink-0 items-center justify-center self-start rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] sm:self-center cursor-pointer"
+              style={{
+                background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
+              }}
+              aria-label="Edit"
+              title="Edit"
             >
-              {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+              <span
+                className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+                style={{ padding: "6px 12px", background: "#0d0d0d" }}
+              >
+                {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+              </span>
+            </button>
+          ) : (
+            <span
+              className="inline-flex shrink-0 items-center justify-center self-start rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] sm:self-center"
+              style={{
+                background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
+              }}
+            >
+              <span
+                className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+                style={{ padding: "6px 12px", background: "#0d0d0d" }}
+              >
+                {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+              </span>
             </span>
-          </span>
+          )}
         </section>
 
         {/* Stat bar removed */}
@@ -375,7 +397,7 @@ export default function RaceDetailPage() {
         {/* Win Percentage + Smart Racecard — side by side */}
         {analysis && racecard.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-[30%_calc(70%-1.5rem)] gap-4 sm:gap-6">
-            <WinPercentage racecard={top4} editHref={editHref} />
+            <WinPercentage racecard={top4} />
             <div className="hidden lg:block">
               <SmartRacecard racecard={racecard} />
             </div>

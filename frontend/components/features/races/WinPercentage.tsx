@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { RacecardRow } from "@/types";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
@@ -34,13 +33,11 @@ const HORSE_BOX_OFFSET: Record<number, string> = {
 
 type WinPercentageProps = {
   racecard: RacecardRow[];
-  editHref?: string;
 };
 
-export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
-  const { t, locale } = useLanguage();
+export function WinPercentage({ racecard }: WinPercentageProps) {
+  const { t } = useLanguage();
   const top4 = racecard.slice(0, 4);
-  const editLabel = locale === "zh-TW" ? "編輯" : "Edit";
 
   return (
     <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 sm:p-5 lg:p-6 h-full">
@@ -70,17 +67,6 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
         <h2 className="font-inter text-base font-semibold text-white sm:text-[22px]">
           {t.races.winPercentage}
         </h2>
-        {editHref && (
-          <Link
-            href={editHref}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/90 hover:bg-white/10 transition"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5a1 1 0 01-.39.242l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.242-.39l8.5-8.5zM12.172 5l-7.793 7.793-.5 1.5 1.5-.5L13 6.172 12.172 5z" />
-            </svg>
-            {editLabel}
-          </Link>
-        )}
       </div>
 
       <div className="relative flex items-center gap-0">
