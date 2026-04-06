@@ -18,10 +18,10 @@ const POSITION_STYLES: Record<number, string> = {
 };
 
 const POSITION_LABELS: Record<number, string> = {
-  1: "1st",
-  2: "2nd",
-  3: "3rd",
-  4: "4th",
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4",
 };
 
 const HORSE_BOX_OFFSET: Record<number, string> = {
@@ -67,18 +67,18 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
         {t.races.winPercentage}
       </h2>
 
-      <div className="relative grid grid-cols-[160px_1fr] sm:grid-cols-[190px_1fr] lg:grid-cols-2 gap-0 items-center">
+      <div className="relative flex items-center gap-0">
         {/* Track visual */}
         <div
-          className="relative -ml-2 sm:-ml-5 lg:-ml-6"
+          className="relative -ml-1 sm:-ml-5 lg:-ml-6 shrink-0 w-[200px] sm:w-[230px] lg:w-[220px]"
           style={{ animation: "track-breathe 3s ease-in-out infinite" }}
         >
           <Image
             src={RACE_VECTOR}
             alt="Race track"
-            width={260}
-            height={470}
-            className="w-full max-w-[170px] sm:max-w-[200px] lg:max-w-[220px]"
+            width={320}
+            height={580}
+            className="w-full h-auto"
           />
           <div className="absolute top-[16%] left-[24%] hidden xl:block pointer-events-none">
             <Image src={RACE_BAR1} alt="" width={60} height={16} className="object-contain" />
@@ -95,30 +95,30 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
         </div>
 
         {/* Horse cards */}
-        <div className="flex flex-col gap-2 sm:gap-3 min-w-0">
+        <div className="flex flex-col gap-2 sm:gap-3 min-w-0 flex-1">
           {top4.map((row, idx) => (
             <div
               key={row.rank}
-              className={`rounded-lg sm:rounded-xl bg-[#1e1e1e] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] border border-white/5 min-w-0 ${HORSE_BOX_OFFSET[idx + 1] ?? ""}`}
+              className={`rounded-lg sm:rounded-xl bg-[#1e1e1e] p-2.5 sm:p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] border border-white/5 min-w-0 ${HORSE_BOX_OFFSET[idx + 1] ?? ""}`}
               style={{
                 animation: `card-slide-in 0.5s ease-out ${idx * 0.25}s both`,
               }}
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className={`inline-flex h-7 min-w-[28px] shrink-0 items-center justify-center rounded-lg px-2 font-inter text-xs font-bold ${POSITION_STYLES[idx + 1]}`}
+                  className={`inline-flex h-6 sm:h-7 min-w-[28px] shrink-0 items-center justify-center rounded-lg px-2 font-inter text-[11px] sm:text-xs font-bold ${POSITION_STYLES[idx + 1]}`}
                 >
                   {POSITION_LABELS[idx + 1]}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <span className="font-inter font-semibold text-[11px] sm:text-sm text-white whitespace-nowrap block truncate">
+                  <span className="block font-inter font-semibold text-[12px] sm:text-sm text-white leading-snug break-words">
                     {row.horse}
                   </span>
-                  <div className="flex items-center justify-between">
-                    <span className="font-inter text-[11px] text-white/50">
+                  <div className="mt-1 flex items-center justify-between gap-3">
+                    <span className="font-inter text-[10px] sm:text-[11px] text-white/50 leading-tight whitespace-nowrap">
                       {t.races.goldHighlight}
                     </span>
-                    <span className="font-inter font-semibold text-sm text-[#28E88E]">
+                    <span className="shrink-0 font-inter font-semibold text-[13px] sm:text-sm text-[#28E88E] leading-tight">
                       {row.winPct}
                     </span>
                   </div>
