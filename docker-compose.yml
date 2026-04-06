@@ -43,7 +43,9 @@ services:
       - "8000"
     networks:
       - default
-      - proxy
+      proxy:
+        aliases:
+          - goracing-backend
 
   frontend:
     build:
@@ -69,7 +71,9 @@ services:
       - "3000"
     networks:
       - default
-      - proxy
+      proxy:
+        aliases:
+          - goracing-frontend
 
 volumes:
   pgdata:
@@ -77,5 +81,5 @@ volumes:
 
 networks:
   proxy:
-    external: true
     name: shared-proxy
+    driver: bridge
