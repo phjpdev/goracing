@@ -67,10 +67,19 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
         {t.races.winPercentage}
       </h2>
 
-      <div className="relative grid grid-cols-[120px_1fr] lg:grid-cols-2 gap-0 items-center">
+      <div className="relative grid grid-cols-[160px_1fr] sm:grid-cols-[190px_1fr] lg:grid-cols-2 gap-0 items-center">
         {/* Track visual */}
-        <div className="relative -ml-4 sm:-ml-5 lg:-ml-6" style={{ animation: "track-breathe 3s ease-in-out infinite" }}>
-          <Image src={RACE_VECTOR} alt="Race track" width={220} height={400} className="w-full lg:max-w-[220px]" />
+        <div
+          className="relative -ml-2 sm:-ml-5 lg:-ml-6"
+          style={{ animation: "track-breathe 3s ease-in-out infinite" }}
+        >
+          <Image
+            src={RACE_VECTOR}
+            alt="Race track"
+            width={260}
+            height={470}
+            className="w-full max-w-[170px] sm:max-w-[200px] lg:max-w-[220px]"
+          />
           <div className="absolute top-[16%] left-[24%] hidden xl:block pointer-events-none">
             <Image src={RACE_BAR1} alt="" width={60} height={16} className="object-contain" />
           </div>
