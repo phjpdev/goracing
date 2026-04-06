@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 type MarketPoint = {
   winProb: number;
@@ -13,6 +14,7 @@ type MarketActivityChartProps = {
 };
 
 export function MarketActivityChart({ points }: MarketActivityChartProps) {
+  const { t, locale } = useLanguage();
   const w = 320;
   const h = 240;
   const pad = { top: 20, right: 20, bottom: 36, left: 40 };
@@ -101,8 +103,19 @@ export function MarketActivityChart({ points }: MarketActivityChartProps) {
           {xTicks.map((v) => (
             <text key={v} x={sx(v)} y={h - pad.bottom + 16} className="fill-white/40 font-inter text-[9px]" textAnchor="middle">{v}</text>
           ))}
-          <text x={12} y={pad.top + plotH / 2} className="fill-white/40 font-inter text-[10px]" textAnchor="middle" dominantBaseline="middle" transform={`rotate(-90, 12, ${pad.top + plotH / 2})`}>Odds</text>
-          <text x={pad.left + plotW / 2} y={h - 4} className="fill-white/40 font-inter text-[10px]" textAnchor="middle">Win Probability</text>
+          <text
+            x={12}
+            y={pad.top + plotH / 2}
+            className="fill-white/40 font-inter text-[10px]"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            transform={`rotate(-90, 12, ${pad.top + plotH / 2})`}
+          >
+            {t.matches.odds}
+          </text>
+          <text x={pad.left + plotW / 2} y={h - 4} className="fill-white/40 font-inter text-[10px]" textAnchor="middle">
+            {locale === "zh-TW" ? "勝出概率" : "Win Probability"}
+          </text>
         </g>
 
         {/* Dots — use translateY for rise animation */}

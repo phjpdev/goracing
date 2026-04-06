@@ -10,7 +10,7 @@ const ANALYTICS_CARD_CLASS =
   "overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06]";
 
 export function VisualAnalyticsSection() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const sectionRef = useRef<HTMLElement | null>(null);
   const [saved, setSaved] = useState<LastLandingAnalytics | null>(null);
   const [replayToken, setReplayToken] = useState(0);
@@ -46,7 +46,9 @@ export function VisualAnalyticsSection() {
   }, []);
 
   const pedigreeValues = saved?.charts.pedigreeValues?.length ? saved.charts.pedigreeValues : [78, 84, 66, 72, 58];
-  const radarLabels = saved?.charts.radarLabels?.length ? saved.charts.radarLabels : ["Surface", "Speed", "Class", "Distance", "Form"];
+  const radarLabels = locale === "zh-TW"
+    ? ["場地", "速度", "級別", "途程", "近況"]
+    : ["Surface", "Speed", "Class", "Distance", "Form"];
   const winPct = saved?.charts.overallWinPct ?? 25;
   const donutSegments = saved?.charts.donutSegments?.length ? saved.charts.donutSegments : [20, 15, 12, 10];
   const marketPoints = saved?.charts.marketPoints?.length ? saved.charts.marketPoints : undefined;

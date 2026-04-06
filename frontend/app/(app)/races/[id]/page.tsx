@@ -241,7 +241,9 @@ export default function RaceDetailPage() {
   const pedigreeValues = topPick
     ? [topPick.surface, topPick.speed, topPick.class, topPick.distance, topPick.form]
     : [0, 0, 0, 0, 0];
-  const radarLabels = ["Surface", "Speed", "Class", "Distance", "Form"];
+  const radarLabels = locale === "zh-TW"
+    ? ["場地", "速度", "級別", "途程", "近況"]
+    : ["Surface", "Speed", "Class", "Distance", "Form"];
 
   const winPct = analysis?.overallWinPct ?? 0;
   const donutSegments = analysis?.topPicks

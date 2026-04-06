@@ -14,7 +14,7 @@ export function FloatingTelegram() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Telegram"
-        className="fixed bottom-36 right-5 z-50 bg-[#229ED9] p-3 sm:p-5 rounded-full shadow-lg hover:bg-[#1e8cc4] transition-colors flex items-center justify-center"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] right-5 z-50 bg-[#229ED9] p-3 sm:p-5 rounded-full shadow-lg hover:bg-[#1e8cc4] transition-colors flex items-center justify-center"
         style={{ animation: "fadeInScale 0.4s ease-out 1s both" }}
       >
         <svg
