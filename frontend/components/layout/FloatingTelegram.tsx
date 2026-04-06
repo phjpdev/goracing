@@ -1,6 +1,12 @@
 "use client";
 
+import { useAuth } from "@/lib/context/AuthContext";
+
 export function FloatingTelegram() {
+  const { auth } = useAuth();
+  const hideForMember = auth?.authenticated && auth.role === "member";
+  if (hideForMember) return null;
+
   return (
     <>
       <style>{`
