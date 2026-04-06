@@ -37,6 +37,8 @@ services:
       ALLOWED_ORIGINS: https://goracing.ai,https://www.goracing.ai
     volumes:
       - uploads:/app/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
     expose:
       - "8000"
     networks:
@@ -61,6 +63,8 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
       REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:3000:3000"
     expose:
       - "3000"
     networks:
