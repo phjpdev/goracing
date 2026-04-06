@@ -111,14 +111,18 @@ export default function AdminEditRaceTop4Page() {
 
   const horseOptions = useMemo(() => {
     const runners = race?.runners ?? [];
-    return runners
-      .map((r) => {
-        const name = (isZh ? r.name_ch || r.name_en : r.name_en || r.name_ch) || "";
-        const isScratched = r.status === "Scratched";
-        const suffix = isScratched ? (isZh ? "（退出）" : "(Scratched)") : "";
-        return { value: String(r.no), label: `${r.no} ${name}${suffix ? ` ${suffix}` : ""}`.trim() };
-      })
-      .sort((a, b) => Number(a.value) - Number(b.value));
+    const byNo = new Map<string, { value: string; label: string }>();
+
+    for (const r of runners) {
+      const noStr = String((r as any).no ?? "").trim();
+      if (!/^\d+$/.test(noStr)) continue;
+
+      const name = (isZh ? r.name_ch || r.name_en : r.name_en || r.name_ch) || "";
+      const label = `${noStr} ${name}`.trim();
+      byNo.set(noStr, { value: noStr, label });
+    }
+
+    return Array.from(byNo.values()).sort((a, b) => Number(a.value) - Number(b.value));
   }, [race, isZh]);
 
   const titleText = isZh ? "編輯前四名" : "Edit Top 4";
