@@ -42,7 +42,7 @@ services:
     expose:
       - "8000"
     networks:
-      - default
+      default: {}
       proxy:
         aliases:
           - goracing-backend
@@ -70,7 +70,7 @@ services:
     expose:
       - "3000"
     networks:
-      - default
+      default: {}
       proxy:
         aliases:
           - goracing-frontend
@@ -80,6 +80,7 @@ volumes:
   uploads:
 
 networks:
+  default: {}
   proxy:
     name: shared-proxy
     driver: bridge
