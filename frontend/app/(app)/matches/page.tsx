@@ -6,10 +6,7 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
 
-const VENUES = [
-  { code: "ST", labelEn: "Sha Tin", labelZh: "沙田" },
-  { code: "HV", labelEn: "Happy Valley", labelZh: "跑馬地" },
-] as const;
+const VENUE_CODES = ["ST", "HV"] as const;
 
 function todayHK() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Hong_Kong" });
@@ -20,7 +17,7 @@ export default function MatchesPage() {
   const { auth } = useAuth();
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const [date, setDate] = useState(todayHK());
-  const [venue, setVenue] = useState("ST");
+  const [venue, setVenue] = useState<(typeof VENUE_CODES)[number]>("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
   const [selectedRace, setSelectedRace] = useState<HKJCRace | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,52 +32,55 @@ export default function MatchesPage() {
     setSelectedRace(null);
     setUpgradeMessage("");
 
-    fetch(`/api/races/meetings?date=${date}&venue=${venue}`, { signal: controller.signal })
-      .then(async (r) => {
-        const data = await r.json().catch(() => null);
-        if (!r.ok) throw new Error(data?.error ?? "Failed to fetch race meetings");
-        return data as HKJCMeeting[];
-      })
-      .then((data: HKJCMeeting[]) => {
-        const m = data?.[0] ?? null;
-        setMeeting(m);
-        const firstAllowed =
-          (m?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
-        setSelectedRace(firstAllowed);
-        if (m?.date && m.date !== date) setDate(m.date);
+    (async () => {
+      try {
+        for (const code of VENUE_CODES) {
+          const r = await fetch(`/api/races/meetings?date=${date}&venue=${code}`, {
+            signal: controller.signal,
+          });
+          const data = await r.json().catch(() => null);
+          if (!r.ok) throw new Error(data?.error ?? "Failed to fetch race meetings");
+
+          const meetings = (data as HKJCMeeting[]) ?? [];
+          const m = meetings?.[0] ?? null;
+          if (m && (m.races?.length ?? 0) > 0) {
+            setVenue(code);
+            setMeeting(m);
+            const firstAllowed =
+              (m?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
+            setSelectedRace(firstAllowed);
+            if (m?.date && m.date !== date) setDate(m.date);
+            setLoading(false);
+            return;
+          }
+        }
+        setMeeting(null);
         setLoading(false);
-      })
-      .catch((e) => {
-        if (e.name !== "AbortError") {
+      } catch (e: any) {
+        if (e?.name !== "AbortError") {
           setError("Failed to load race data.");
           setLoading(false);
         }
-      });
+      }
+    })();
 
     return () => controller.abort();
-  }, [date, venue, isManager]);
+  }, [date, isManager]);
 
   return (
     <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
       {/* Controls */}
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex gap-2">
-            {VENUES.map((v) => (
-              <button
-                key={v.code}
-                type="button"
-                onClick={() => setVenue(v.code)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  venue === v.code
-                    ? "bg-[#28E88E] text-[#020308]"
-                    : "bg-[#1a1a1a] border border-white/10 text-white/70 hover:text-white"
-                }`}
-              >
-                {locale === "zh-TW" ? v.labelZh : v.labelEn}
-              </button>
-            ))}
-          </div>
+          <span className="text-white/40 text-sm">
+            {locale === "zh-TW"
+              ? venue === "ST"
+                ? "沙田"
+                : "跑馬地"
+              : venue === "ST"
+                ? "Sha Tin"
+                : "Happy Valley"}
+          </span>
           {meeting && (
             <span className="text-white/40 text-sm">
               {meeting.totalNumberOfRace} {t.matches.races} · {meeting.date}
