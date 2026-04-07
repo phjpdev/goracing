@@ -1,4 +1,4 @@
-import { HeroSection, FeatureCards, VisualAnalyticsSection, RecordsSection, ConnectSection } from "@/components/features/home";
+import { HeroSection, FeatureCards, VisualAnalyticsSection, RecordsSection, DisclaimerSection, ConnectSection } from "@/components/features/home";
 import { Footer } from "@/components/layout";
 
 export default function Home() {
@@ -8,6 +8,7 @@ export default function Home() {
       <RecordsSection />
       <FeatureCards />
       <VisualAnalyticsSection />
+      <DisclaimerSection />
       <ConnectSection />
       <Footer />
     </>

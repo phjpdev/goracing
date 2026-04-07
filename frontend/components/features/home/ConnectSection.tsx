@@ -36,8 +36,8 @@ export function ConnectSection() {
   const { t } = useLanguage();
 
   return (
-    <section className="mx-auto mt-16 sm:mt-24 lg:mt-32 w-full max-w-[1360px] px-5 sm:px-6 lg:px-10 pb-16 lg:pb-20">
-      <div className="rounded-[20px] border border-white/[0.08] bg-white/[0.03] px-6 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-16 text-center">
+    <section className="mx-auto mt-8 w-full max-w-[1360px] px-5 sm:px-6 lg:px-10 pb-10 lg:pb-12">
+      <div className="rounded-[20px] border border-white/[0.08] bg-white/[0.03] px-6 py-9 sm:px-10 sm:py-12 lg:px-16 lg:py-14 text-center">
         <h2 className="text-[24px] sm:text-[28px] lg:text-[32px] font-semibold leading-[1.2] tracking-[-0.01em] text-white">
           {t.connect.title}
         </h2>
