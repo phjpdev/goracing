@@ -45,7 +45,7 @@ export function ConnectSection() {
           {t.connect.description}
         </p>
         {/* Social icons */}
-        <div className="mt-8 flex items-center justify-center gap-6">
+        <div className="mt-8 flex items-center justify-center gap-5 sm:gap-6">
           {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
             <a
               key={label}
@@ -53,7 +53,7 @@ export function ConnectSection() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={label}
-              className="text-white text-[48px] transition duration-300 hover:text-gray-400"
+              className="text-white text-[34px] sm:text-[42px] transition duration-300 hover:text-gray-400"
             >
               <Icon />
             </a>
