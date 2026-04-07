@@ -306,44 +306,51 @@ export default function RaceDetailPage() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       <main className="mx-auto w-full max-w-[1600px] space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        {/* Back + title block (same line) */}
-        <section className="flex items-center gap-3 sm:items-start">
-          <Link
-            href={ROUTES.MATCHES}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center gap-1.5 font-inter text-sm text-white/80 transition hover:text-white shrink-0"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            {t.races.back}
-          </Link>
+        {/* Back + title (top row) + status pill (mobile left) */}
+        <section className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex items-center gap-3 sm:items-center">
+            <Link
+              href={ROUTES.MATCHES}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 font-inter text-sm font-medium text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#28E88E]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0d] shrink-0 -mt-1 sm:mt-0"
+              aria-label={t.races.back}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                {/* Curved "return/undo" back icon */}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 14l-4-4m0 0l4-4m-4 4h9a6 6 0 110 12h-1"
+                />
+              </svg>
+            </Link>
 
-          <div className="flex flex-col gap-3 flex-1 min-w-0 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="min-w-0 flex-1">
-                <p className="font-inter text-base sm:text-[18px] text-white/70 leading-tight">
-                  {locale === "zh-TW" ? `第 ${race.raceNumber} 場` : `Race ${race.raceNumber}`}
-                </p>
-                <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
-                  {race.name}
-                </h1>
-                <p className="font-inter text-sm sm:text-[16px] text-white/60 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
-                  <span>{race.venue}</span>
-                  <span className="text-white/40">•</span>
-                  <span>{race.time}</span>
-                  <span className="text-white/40">•</span>
-                  <span>{race.distance}</span>
-                  <span className="text-white/40">•</span>
-                  <span className="text-[#28E88E]">{race.going}</span>
-                </p>
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-inter text-base sm:text-[18px] text-white/70 leading-tight">
+                {locale === "zh-TW" ? `第 ${race.raceNumber} 場` : `Race ${race.raceNumber}`}
+              </p>
+              <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
+                {race.name}
+              </h1>
+              <p className="font-inter text-sm sm:text-[16px] text-white/60 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 leading-[1.2]">
+                <span>{race.venue}</span>
+                <span className="text-white/40">•</span>
+                <span>{race.time}</span>
+                <span className="text-white/40">•</span>
+                <span>{race.distance}</span>
+                <span className="text-white/40">•</span>
+                <span className="text-[#28E88E]">{race.going}</span>
+              </p>
             </div>
+          </div>
 
+          {/* Desktop: status pill on the right */}
+          <div className="hidden sm:block sm:ml-auto">
             {editHref ? (
               <button
                 type="button"
                 onClick={() => router.push(editHref)}
-                className="inline-flex shrink-0 items-center justify-center self-start rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] sm:self-center cursor-pointer"
+                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
                 style={{
                   background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
                 }}
@@ -359,7 +366,44 @@ export default function RaceDetailPage() {
               </button>
             ) : (
               <span
-                className="inline-flex shrink-0 items-center justify-center self-start rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] sm:self-center"
+                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
+                style={{
+                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
+                }}
+              >
+                <span
+                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
+                >
+                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                </span>
+              </span>
+            )}
+          </div>
+
+          {/* Mobile: status pill left-aligned */}
+          <div className="sm:hidden">
+            {editHref ? (
+              <button
+                type="button"
+                onClick={() => router.push(editHref)}
+                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
+                style={{
+                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
+                }}
+                aria-label="Edit"
+                title="Edit"
+              >
+                <span
+                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
+                >
+                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                </span>
+              </button>
+            ) : (
+              <span
+                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
                 style={{
                   background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
                 }}

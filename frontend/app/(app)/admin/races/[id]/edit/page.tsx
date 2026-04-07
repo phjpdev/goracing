@@ -235,9 +235,17 @@ export default function AdminEditRaceTop4Page() {
       <div className="flex flex-col items-start gap-2">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition"
+          aria-label={t.races.back}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#28E88E]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020308]"
         >
-          ← {t.races.back}
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 14l-4-4m0 0l4-4m-4 4h9a6 6 0 110 12h-1"
+            />
+          </svg>
         </Link>
         <div className="min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold text-white truncate">
