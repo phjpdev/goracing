@@ -40,7 +40,7 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
   const top4 = racecard.slice(0, 4);
 
   return (
-    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 sm:p-5 lg:p-6 h-full">
+    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 py-0 sm:px-5 sm:py-0 lg:px-6 lg:py-0 h-full">
       <style>{`
         @keyframes track-breathe {
           0%, 100% {
@@ -63,12 +63,6 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
           }
         }
       `}</style>
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h2 className="font-inter text-base font-semibold text-white sm:text-[22px]">
-          {t.races.winPercentage}
-        </h2>
-      </div>
-
       <div className="relative flex items-center gap-0">
         {/* Track visual */}
         <div

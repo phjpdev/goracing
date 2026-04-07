@@ -361,7 +361,7 @@ export default function RaceDetailPage() {
                   className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
                   style={{ padding: "6px 12px", background: "#0d0d0d" }}
                 >
-                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                  {t.races.winPercentage}
                 </span>
               </button>
             ) : (
@@ -375,7 +375,7 @@ export default function RaceDetailPage() {
                   className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
                   style={{ padding: "6px 12px", background: "#0d0d0d" }}
                 >
-                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                  {t.races.winPercentage}
                 </span>
               </span>
             )}
@@ -398,7 +398,7 @@ export default function RaceDetailPage() {
                   className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
                   style={{ padding: "6px 12px", background: "#0d0d0d" }}
                 >
-                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                  {t.races.winPercentage}
                 </span>
               </button>
             ) : (
@@ -412,7 +412,7 @@ export default function RaceDetailPage() {
                   className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
                   style={{ padding: "6px 12px", background: "#0d0d0d" }}
                 >
-                  {race.status === "UPCOMING" ? t.races.upcoming : race.status === "LIVE" ? t.races.live : t.races.finished}
+                  {t.races.winPercentage}
                 </span>
               </span>
             )}
