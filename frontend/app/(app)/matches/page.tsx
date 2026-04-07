@@ -13,7 +13,7 @@ function todayHK() {
 }
 
 export default function MatchesPage() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { auth } = useAuth();
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const [date, setDate] = useState(todayHK());
@@ -72,13 +72,6 @@ export default function MatchesPage() {
       {/* Controls */}
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-white/40 text-sm">
-            {(() => {
-              const code = (meeting?.venueCode as (typeof VENUE_CODES)[number] | undefined) ?? venue;
-              if (locale === "zh-TW") return code === "ST" ? "沙田" : "跑馬地";
-              return code === "ST" ? "Sha Tin" : "Happy Valley";
-            })()}
-          </span>
           {meeting && (
             <span className="text-white/40 text-sm">
               {meeting.totalNumberOfRace} {t.matches.races} · {meeting.date}
