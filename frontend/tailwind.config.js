@@ -9,8 +9,12 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Clash Display", "system-ui", "sans-serif"],
-        inter: ["Inter", "system-ui", "sans-serif"],
+        // Default UI font: Latin + Traditional Chinese friendly
+        sans: ["Inter", "Noto Sans TC", "system-ui", "sans-serif"],
+        // Keep existing utility (`font-inter`) but improve Chinese fallback
+        inter: ["Inter", "Noto Sans TC", "system-ui", "sans-serif"],
+        // Optional: use for big headings if desired
+        display: ["Clash Display", "system-ui", "sans-serif"],
       },
     },
   },
