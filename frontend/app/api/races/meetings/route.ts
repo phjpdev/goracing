@@ -263,6 +263,14 @@ export async function GET(request: NextRequest) {
     // Redis unavailable — continue with direct fetch
   }
 
+  // Always enforce venueCode match (prevents wrong venue cached under key)
+  meetings = (meetings ?? []).filter(
+    (m: { venueCode?: string }) => {
+      const vc = m?.venueCode;
+      return typeof vc === "string" && LOCAL_VENUES.has(vc) && vc === venue;
+    }
+  );
+
   // 2. Fetch from HKJC if cache miss
   if (!meetings || meetings.length === 0) {
     try {
@@ -274,7 +282,7 @@ export async function GET(request: NextRequest) {
 
       // Filter to only local HKJC meetings (exclude simulcast S1/S2/S3/S4)
       meetings = (data.data?.raceMeetings ?? []).filter(
-        (m: { venueCode: string }) => LOCAL_VENUES.has(m.venueCode)
+        (m: { venueCode: string }) => LOCAL_VENUES.has(m.venueCode) && m.venueCode === venue
       );
 
       if (meetings.length > 0) {
@@ -298,7 +306,7 @@ export async function GET(request: NextRequest) {
         }
 
         meetings = (fallback.data?.raceMeetings ?? []).filter(
-          (m: { venueCode: string }) => LOCAL_VENUES.has(m.venueCode)
+          (m: { venueCode: string }) => LOCAL_VENUES.has(m.venueCode) && m.venueCode === venue
         );
 
         // Cache with the actual meeting date as key

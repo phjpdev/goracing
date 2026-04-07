@@ -44,7 +44,7 @@ export default function MatchesPage() {
           const meetings = (data as HKJCMeeting[]) ?? [];
           const m = meetings?.[0] ?? null;
           if (m && (m.races?.length ?? 0) > 0) {
-            setVenue(code);
+            setVenue((m.venueCode as (typeof VENUE_CODES)[number]) ?? code);
             setMeeting(m);
             const firstAllowed =
               (m?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
@@ -73,13 +73,11 @@ export default function MatchesPage() {
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-white/40 text-sm">
-            {locale === "zh-TW"
-              ? venue === "ST"
-                ? "沙田"
-                : "跑馬地"
-              : venue === "ST"
-                ? "Sha Tin"
-                : "Happy Valley"}
+            {(() => {
+              const code = (meeting?.venueCode as (typeof VENUE_CODES)[number] | undefined) ?? venue;
+              if (locale === "zh-TW") return code === "ST" ? "沙田" : "跑馬地";
+              return code === "ST" ? "Sha Tin" : "Happy Valley";
+            })()}
           </span>
           {meeting && (
             <span className="text-white/40 text-sm">
