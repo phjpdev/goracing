@@ -325,6 +325,7 @@ export default function RaceDetailPage() {
         onClose={() => {
           setPaywallOpen(false);
           setPaywallDismissed(true);
+          if (showVipPaywall) router.replace(ROUTES.MATCHES);
         }}
       />
       <main className="mx-auto w-full max-w-[1600px] space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -461,34 +462,6 @@ export default function RaceDetailPage() {
               {t.races.retry}
             </button>
           </div>
-        )}
-
-        {showVipPaywall && (
-          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-            <button
-              type="button"
-              onClick={() => setPaywallOpen(true)}
-              className="group w-full text-left rounded-xl border border-white/10 bg-[#0d0d0d]/40 px-4 py-4 sm:px-5 sm:py-5 transition hover:bg-[#0d0d0d]/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#28E88E]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0d]"
-              aria-label="Open paywall"
-            >
-              <div className="flex items-center gap-4">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                  <Image src="/assets/lock.jpg" alt="Locked" fill className="object-contain p-1.5" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-inter text-sm text-white/70">分析</p>
-                  <p className="font-inter text-[15px] sm:text-[16px] font-semibold text-white/90 mt-0.5">
-                    付费後可查看分析
-                  </p>
-                </div>
-
-                <div className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 transition group-hover:border-[#28E88E]/30 group-hover:text-white">
-                  {locale === "zh-TW" ? "查看" : "View"}
-                </div>
-              </div>
-            </button>
-          </section>
         )}
 
         {/* Win Percentage + Smart Racecard — side by side */}

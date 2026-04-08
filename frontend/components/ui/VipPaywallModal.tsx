@@ -33,10 +33,10 @@ export function VipPaywallModal({ open, onClose }: VipPaywallModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <button
         type="button"
-        className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close"
       />
@@ -45,18 +45,25 @@ export function VipPaywallModal({ open, onClose }: VipPaywallModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-[420px] rounded-[28px] p-[1px] shadow-[0_30px_120px_rgba(0,0,0,0.75)]"
+        className="relative w-full max-w-[460px] rounded-[10px] p-[1px] shadow-[0_40px_140px_rgba(0,0,0,0.82)]"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(40,232,142,0.34) 0%, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.06) 100%)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.05) 100%)",
         }}
       >
-        <div className="relative rounded-[27px] bg-[#0d0d0d] px-6 py-6 sm:px-7 sm:py-7">
+        <div className="relative overflow-hidden rounded-[10px] bg-[#0b0d0c] px-6 py-6 sm:px-8 sm:py-8 ring-1 ring-white/10">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full blur-3xl"
+            style={{
+              background: "radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 70%)",
+            }}
+          />
+
           <button
             ref={closeBtnRef}
             type="button"
             onClick={onClose}
-            className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#28E88E]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0d]"
+            className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0d0c]"
             aria-label="Close"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -64,17 +71,22 @@ export function VipPaywallModal({ open, onClose }: VipPaywallModalProps) {
             </svg>
           </button>
 
-          <h2 id={titleId} className="text-center font-inter text-[20px] font-semibold tracking-[-0.02em] text-white">
-            分析
-          </h2>
+          <div className="flex items-center justify-center">
+            <h2
+              id={titleId}
+              className="text-center font-inter text-[20px] sm:text-[22px] font-semibold tracking-[-0.02em] text-white"
+            >
+              分析
+            </h2>
+          </div>
 
-          <div className="mt-5 flex items-center justify-center">
-            <div className="relative h-[112px] w-[112px] overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
-              <Image src="/assets/lock.jpg" alt="Locked" fill className="object-contain p-2" priority />
+          <div className="mt-6 flex items-center justify-center">
+            <div className="relative h-[128px] w-[128px] sm:h-[144px] sm:w-[144px]">
+              <Image src="/assets/lock.jpg" alt="Locked" fill className="object-contain" priority />
             </div>
           </div>
 
-          <p className="mt-5 text-center font-inter text-[16px] leading-[1.4] text-white/85">
+          <p className="mt-6 text-center font-inter text-[15px] sm:text-[16px] leading-[1.5] text-white/85">
             付费後可查看分析
           </p>
         </div>

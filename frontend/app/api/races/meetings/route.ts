@@ -3,9 +3,25 @@ import { jwtVerify } from "jose";
 import redis from "@/lib/redis";
 
 const CACHE_TTL = 60; // 1 minute (HKJC data changes frequently)
+const STALE_TTL = 60 * 10; // 10 minutes (fallback when HKJC/Redis is flaky)
 const LOCKED_TTL = 60 * 60 * 24 * 7; // 7 days
+const HKJC_TIMEOUT_MS = 8000;
+const HKJC_RETRIES = 1;
 
 const HKJC_URL = "https://info.cld.hkjc.com/graphql/base/";
+
+type MeetingsCacheEntry = {
+  value: any[];
+  expiresAt: number;
+  staleExpiresAt: number;
+};
+
+const globalForMeetings = globalThis as unknown as {
+  __meetingsMemCache?: Map<string, MeetingsCacheEntry>;
+};
+
+const meetingsMemCache = globalForMeetings.__meetingsMemCache ?? new Map<string, MeetingsCacheEntry>();
+if (process.env.NODE_ENV !== "production") globalForMeetings.__meetingsMemCache = meetingsMemCache;
 
 // Must match the exact whitelisted query used by HKJC (query hashing/whitelisting)
 const QUERY = `
@@ -196,22 +212,57 @@ query raceMeetings($date: String, $venueCode: String) {
 }`;
 
 async function fetchHKJC(variables: Record<string, string>) {
-  const res = await fetch(HKJC_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "Origin": "https://racing.hkjc.com",
-      "Referer": "https://racing.hkjc.com/",
-    },
-    body: JSON.stringify({
-      operationName: "raceMeetings",
-      query: QUERY,
-      variables,
-    }),
-    cache: "no-store",
-  });
-  return res.json();
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), HKJC_TIMEOUT_MS);
+  try {
+    const res = await fetch(HKJC_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Origin": "https://racing.hkjc.com",
+        "Referer": "https://racing.hkjc.com/",
+        "User-Agent": "Mozilla/5.0",
+      },
+      body: JSON.stringify({
+        operationName: "raceMeetings",
+        query: QUERY,
+        variables,
+      }),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+
+    const raw = await res.text();
+    let json: any;
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      throw new Error(`HKJC non-JSON response (status ${res.status})`);
+    }
+
+    if (!res.ok) {
+      const msg = json?.error ?? json?.message ?? `HKJC status ${res.status}`;
+      throw new Error(msg);
+    }
+    return json;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function fetchHKJCWithRetry(variables: Record<string, string>) {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= HKJC_RETRIES; attempt++) {
+    try {
+      return await fetchHKJC(variables);
+    } catch (e) {
+      lastErr = e;
+      // If it was an abort, retry once quickly; otherwise retry once for transient network errors.
+      if (attempt < HKJC_RETRIES) continue;
+    }
+  }
+  throw lastErr;
 }
 
 // Local venue codes (not simulcast like S1/S2/S3/S4)
@@ -248,16 +299,44 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get("date") ?? new Date().toISOString().slice(0, 10);
   const venue = searchParams.get("venue") ?? "ST";
   const cacheKey = `meetings:${date}:${venue}`;
+  const staleKey = `meetings_stale:${date}:${venue}`;
 
   const role = await getRoleFromRequest(request);
   const isManager = role === "admin" || role === "subadmin";
 
   // 1. Get meeting payload (Redis cache first)
   let meetings: any[] = [];
+  let hasStale = false;
+
+  // 1a. In-memory cache (fastest, works even if Redis is down)
+  const mem = meetingsMemCache.get(cacheKey);
+  if (mem) {
+    const now = Date.now();
+    if (mem.expiresAt > now) {
+      meetings = mem.value;
+    } else if (mem.staleExpiresAt > now) {
+      meetings = mem.value;
+      hasStale = true;
+    } else {
+      meetingsMemCache.delete(cacheKey);
+    }
+  }
+
   try {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      meetings = JSON.parse(cached);
+    // Only query Redis if we don't already have a fresh in-memory hit.
+    if (!meetings || meetings.length === 0 || hasStale) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        meetings = JSON.parse(cached);
+        hasStale = false;
+      }
+      if (!cached) {
+        const stale = await redis.get(staleKey);
+        if (stale) {
+          meetings = JSON.parse(stale);
+          hasStale = true;
+        }
+      }
     }
   } catch {
     // Redis unavailable — continue with direct fetch
@@ -272,9 +351,9 @@ export async function GET(request: NextRequest) {
   );
 
   // 2. Fetch from HKJC if cache miss
-  if (!meetings || meetings.length === 0) {
+  if (!meetings || meetings.length === 0 || hasStale) {
     try {
-      const data = await fetchHKJC({ date, venueCode: venue });
+      const data = await fetchHKJCWithRetry({ date, venueCode: venue });
 
       if (data.errors) {
         console.error("HKJC API errors:", data.errors);
@@ -287,7 +366,16 @@ export async function GET(request: NextRequest) {
 
       if (meetings.length > 0) {
         // Cache the raw HKJC payload
-        try { await redis.set(cacheKey, JSON.stringify(meetings), "EX", CACHE_TTL); } catch {}
+        try {
+          await redis.set(cacheKey, JSON.stringify(meetings), "EX", CACHE_TTL);
+          await redis.set(staleKey, JSON.stringify(meetings), "EX", STALE_TTL);
+        } catch {}
+
+        meetingsMemCache.set(cacheKey, {
+          value: meetings,
+          expiresAt: Date.now() + CACHE_TTL * 1000,
+          staleExpiresAt: Date.now() + STALE_TTL * 1000,
+        });
       } else {
         // No local meeting on the requested date — find the active meeting for this venue
         const active: { venueCode: string; date: string }[] =
@@ -299,7 +387,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Re-fetch with the actual date of the next scheduled meeting
-        const fallback = await fetchHKJC({ date: nextMeeting.date, venueCode: venue });
+        const fallback = await fetchHKJCWithRetry({ date: nextMeeting.date, venueCode: venue });
 
         if (fallback.errors) {
           console.error("HKJC fallback errors:", fallback.errors);
@@ -309,15 +397,35 @@ export async function GET(request: NextRequest) {
           (m: { venueCode: string }) => LOCAL_VENUES.has(m.venueCode) && m.venueCode === venue
         );
 
-        // Cache with the actual meeting date as key
+        // Cache with the actual meeting date as key, and ALSO under the requested key
         if (meetings.length > 0) {
           const actualKey = `meetings:${nextMeeting.date}:${venue}`;
+          const actualStaleKey = `meetings_stale:${nextMeeting.date}:${venue}`;
           try { await redis.set(actualKey, JSON.stringify(meetings), "EX", CACHE_TTL); } catch {}
+          try { await redis.set(actualStaleKey, JSON.stringify(meetings), "EX", STALE_TTL); } catch {}
+          try { await redis.set(cacheKey, JSON.stringify(meetings), "EX", CACHE_TTL); } catch {}
+          try { await redis.set(staleKey, JSON.stringify(meetings), "EX", STALE_TTL); } catch {}
+
+          meetingsMemCache.set(cacheKey, {
+            value: meetings,
+            expiresAt: Date.now() + CACHE_TTL * 1000,
+            staleExpiresAt: Date.now() + STALE_TTL * 1000,
+          });
+          meetingsMemCache.set(actualKey, {
+            value: meetings,
+            expiresAt: Date.now() + CACHE_TTL * 1000,
+            staleExpiresAt: Date.now() + STALE_TTL * 1000,
+          });
         }
       }
     } catch (e) {
       console.error("meetings route error:", e);
-      return NextResponse.json({ error: "Failed to fetch race meetings" }, { status: 502 });
+      // If we have stale data, serve it instead of failing the page.
+      if (meetings && meetings.length > 0) {
+        // continue; will attach locks below
+      } else {
+        return NextResponse.json({ error: "Failed to fetch race meetings" }, { status: 502 });
+      }
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MatchCard, OddsTable } from "@/components/features/matches";
+import { VipPaywallModal } from "@/components/ui/VipPaywallModal";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
@@ -16,6 +17,7 @@ export default function MatchesPage() {
   const { t, locale } = useLanguage();
   const { auth } = useAuth();
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
+  const isVip = !!auth?.vip_expiry_date && new Date(auth.vip_expiry_date).getTime() > Date.now();
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState<(typeof VENUE_CODES)[number]>("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
@@ -23,6 +25,7 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [upgradeMessage, setUpgradeMessage] = useState("");
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -34,31 +37,49 @@ export default function MatchesPage() {
 
     (async () => {
       try {
-        for (const code of VENUE_CODES) {
+        type VenueCode = (typeof VENUE_CODES)[number];
+        type AttemptError = { kind: "empty" } | { kind: "hard"; message: string };
+
+        const attempts = VENUE_CODES.map(async (code): Promise<HKJCMeeting> => {
           const r = await fetch(`/api/races/meetings?date=${date}&venue=${code}`, {
             signal: controller.signal,
           });
           const data = await r.json().catch(() => null);
-          if (!r.ok) throw new Error(data?.error ?? "Failed to fetch race meetings");
+          if (!r.ok) throw { kind: "hard", message: data?.error ?? "Failed to fetch race meetings" } satisfies AttemptError;
 
           const meetings = (data as HKJCMeeting[]) ?? [];
           const m = meetings?.[0] ?? null;
-          if (m && (m.races?.length ?? 0) > 0) {
-            setVenue((m.venueCode as (typeof VENUE_CODES)[number]) ?? code);
-            setMeeting(m);
-            const firstAllowed =
-              (m?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
-            setSelectedRace(firstAllowed);
-            if (m?.date && m.date !== date) setDate(m.date);
-            setLoading(false);
-            return;
-          }
+          if (!m || (m.races?.length ?? 0) === 0) throw { kind: "empty" } satisfies AttemptError;
+          return m;
+        });
+
+        let picked: HKJCMeeting | null = null;
+        try {
+          picked = await Promise.any(attempts);
+        } finally {
+          // Stop the slower in-flight request once we have an answer.
+          controller.abort();
         }
+
+        if (picked) {
+          setVenue((picked.venueCode as VenueCode) ?? "ST");
+          setMeeting(picked);
+          const firstAllowed =
+            (picked?.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
+          setSelectedRace(firstAllowed);
+          if (picked?.date && picked.date !== date) setDate(picked.date);
+          setLoading(false);
+          return;
+        }
+
         setMeeting(null);
         setLoading(false);
       } catch (e: any) {
+        // Promise.any rejects with AggregateError when all attempts failed.
+        const errors: any[] = e?.errors ?? [];
+        const anyHardFailure = errors.some((err) => err?.kind === "hard");
         if (e?.name !== "AbortError") {
-          setError("Failed to load race data.");
+          if (anyHardFailure) setError("Failed to load race data.");
           setLoading(false);
         }
       }
@@ -69,6 +90,7 @@ export default function MatchesPage() {
 
   return (
     <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
+      <VipPaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       {/* Controls */}
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
@@ -113,6 +135,11 @@ export default function MatchesPage() {
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
             <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => (
+                (() => {
+                  const shouldBlockAnalysis = !isManager && !isVip;
+                  const shouldBlockLockedRace = race.isLocked && !isManager;
+                  const shouldIntercept = shouldBlockAnalysis || shouldBlockLockedRace;
+                  return (
                 <MatchCard
                   key={race.id}
                   race={race}
@@ -126,9 +153,24 @@ export default function MatchesPage() {
                     setUpgradeMessage("");
                     setSelectedRace(race);
                   }}
+                  onViewDetails={
+                    shouldIntercept
+                      ? () => {
+                          if (shouldBlockAnalysis) {
+                            setPaywallOpen(true);
+                            return;
+                          }
+                          if (shouldBlockLockedRace) {
+                            setUpgradeMessage("請升級VVIP");
+                          }
+                        }
+                      : undefined
+                  }
                   meetingDate={meeting.date}
                   venueCode={meeting.venueCode}
                 />
+                  );
+                })()
               ))}
             </div>
 

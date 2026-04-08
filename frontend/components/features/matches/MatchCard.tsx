@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { MouseEvent } from "react";
 import type { HKJCRace } from "@/types/race-meeting";
 import { ROUTES } from "@/lib/constants";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -10,6 +11,7 @@ type MatchCardProps = {
   onClick: () => void;
   meetingDate: string;
   venueCode: string;
+  onViewDetails?: () => void;
 };
 
 function formatTime(isoString: string) {
@@ -22,13 +24,20 @@ function formatTime(isoString: string) {
   });
 }
 
-export function MatchCard({ race, index, isSelected, onClick, meetingDate, venueCode }: MatchCardProps) {
+export function MatchCard({ race, index, isSelected, onClick, meetingDate, venueCode, onViewDetails }: MatchCardProps) {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-TW";
   const raceName = (isZh ? race.raceName_ch || race.raceName_en : race.raceName_en || race.raceName_ch) || `Race ${race.no}`;
   const track = isZh ? race.raceTrack?.description_ch || race.raceTrack?.description_en : race.raceTrack?.description_en || race.raceTrack?.description_ch;
   const going = (isZh ? race.go_ch || race.go_en : race.go_en || race.go_ch) || "-";
   const raceClass = (isZh ? race.raceClass_ch || race.raceClass_en : race.raceClass_en || race.raceClass_ch) || "-";
+
+  const handleViewDetailsClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation();
+    if (!onViewDetails) return;
+    e.preventDefault();
+    onViewDetails();
+  };
 
   return (
     <div
@@ -82,7 +91,7 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
         <dd className="text-right">
           <Link
             href={`${ROUTES.RACE(race.id)}?date=${meetingDate}&venue=${venueCode}`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleViewDetailsClick}
             className="inline-block rounded-md border border-[#28E88E] px-3 py-1 text-[#28E88E] text-xs font-medium hover:bg-[#28E88E] hover:text-[#020308] transition-colors no-underline"
           >
             {t.matches.viewDetails}
