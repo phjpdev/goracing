@@ -349,13 +349,9 @@ export default function RaceDetailPage() {
             </Link>
 
             <div className="min-w-0 flex-1">
-              <p className="font-inter text-base sm:text-[18px] text-white/70 leading-tight">
-                {locale === "zh-TW" ? `第 ${race.raceNumber} 場` : `Race ${race.raceNumber}`}
-              </p>
-              <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
-                {race.name}
-              </h1>
-              <p className="font-inter text-sm sm:text-[16px] text-white/60 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 leading-[1.2]">
+              <p className="font-inter text-sm sm:text-[15px] text-white/60 leading-tight flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="text-white/70">{locale === "zh-TW" ? `第 ${race.raceNumber} 場` : `Race ${race.raceNumber}`}</span>
+                <span className="text-white/40">•</span>
                 <span>{race.venue}</span>
                 <span className="text-white/40">•</span>
                 <span>{race.time}</span>
@@ -364,6 +360,9 @@ export default function RaceDetailPage() {
                 <span className="text-white/40">•</span>
                 <span className="text-[#28E88E]">{race.going}</span>
               </p>
+              <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
+                {race.name}
+              </h1>
             </div>
           </div>
 

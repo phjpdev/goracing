@@ -43,7 +43,7 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
   const top4 = racecard.slice(0, 4);
 
   return (
-    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 pt-4 pb-0 sm:px-5 sm:pt-4 lg:px-6 lg:pt-5 h-full">
+    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 py-0 sm:px-5 lg:px-6 h-full">
       <style>{`
         @keyframes track-breathe {
           0%, 100% {
@@ -66,33 +66,29 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
           }
         }
       `}</style>
-      {/* Button row */}
-      <div className="flex justify-start mb-3">
+      {/* Button — relative, overlaps into track image */}
+      <div className="relative z-10 mt-5 -mb-5">
         {editHref ? (
           <button
             type="button"
             onClick={() => router.push(editHref)}
-            className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
-            style={{ background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)" }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold text-[#020308] cursor-pointer shadow-[0_4px_16px_rgba(40,232,142,0.35)] transition hover:brightness-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg, #28E88E 0%, #16a05c 100%)" }}
           >
-            <span
-              className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-              style={{ padding: "6px 12px", background: "#0d0d0d" }}
-            >
-              {t.races.winPercentage}
-            </span>
+            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            {t.races.winPercentage}
           </button>
         ) : (
           <span
-            className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
-            style={{ background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)" }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold text-[#020308] shadow-[0_4px_16px_rgba(40,232,142,0.35)]"
+            style={{ background: "linear-gradient(135deg, #28E88E 0%, #16a05c 100%)" }}
           >
-            <span
-              className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-              style={{ padding: "6px 12px", background: "#0d0d0d" }}
-            >
-              {t.races.winPercentage}
-            </span>
+            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            {t.races.winPercentage}
           </span>
         )}
       </div>
@@ -171,6 +167,7 @@ export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
           ))}
         </div>
       </div>
+
     </article>
   );
 }
