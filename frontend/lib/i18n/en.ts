@@ -13,7 +13,7 @@ export const en: TranslationKeys = {
 
   // Hero / Landing
   hero: {
-    title: "Paddock Horse Racing",
+    title: "Go Racing",
     description: "Turn complex race data into clear, confident decisions with real-time AI insights built for modern bettors.",
     viewMatches: "View Live Matches",
     login: "Log In",
@@ -112,7 +112,7 @@ export const en: TranslationKeys = {
   // Auth
   auth: {
     loginTitle: "Log In",
-    loginWelcome: "Welcome back to Paddock Horse Racing, your AI powered racing modules",
+    loginWelcome: "Welcome back to Go Racing, your AI powered racing modules",
     signupTitle: "Create Account",
     signupWelcome: "Join our AI-powered horse racing analytics platform",
     email: "Email Address",
