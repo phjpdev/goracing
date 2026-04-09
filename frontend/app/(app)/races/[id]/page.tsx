@@ -367,79 +367,6 @@ export default function RaceDetailPage() {
             </div>
           </div>
 
-          {/* Desktop: status pill on the right */}
-          <div className="hidden sm:block sm:ml-auto">
-            {editHref ? (
-              <button
-                type="button"
-                onClick={() => router.push(editHref)}
-                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
-                style={{
-                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
-                }}
-                aria-label="Edit"
-                title="Edit"
-              >
-                <span
-                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
-                >
-                  {t.races.winPercentage}
-                </span>
-              </button>
-            ) : (
-              <span
-                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
-                style={{
-                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
-                }}
-              >
-                <span
-                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
-                >
-                  {t.races.winPercentage}
-                </span>
-              </span>
-            )}
-          </div>
-
-          {/* Mobile: status pill left-aligned */}
-          <div className="sm:hidden">
-            {editHref ? (
-              <button
-                type="button"
-                onClick={() => router.push(editHref)}
-                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
-                style={{
-                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
-                }}
-                aria-label="Edit"
-                title="Edit"
-              >
-                <span
-                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
-                >
-                  {t.races.winPercentage}
-                </span>
-              </button>
-            ) : (
-              <span
-                className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
-                style={{
-                  background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)",
-                }}
-              >
-                <span
-                  className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
-                  style={{ padding: "6px 12px", background: "#0d0d0d" }}
-                >
-                  {t.races.winPercentage}
-                </span>
-              </span>
-            )}
-          </div>
         </section>
 
         {/* Stat bar removed */}
@@ -467,7 +394,7 @@ export default function RaceDetailPage() {
         {/* Win Percentage + Smart Racecard — side by side */}
         {analysis && racecard.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-[30%_calc(70%-1.5rem)] gap-4 sm:gap-6">
-            <WinPercentage racecard={top4} />
+            <WinPercentage racecard={top4} editHref={editHref} />
             <div className="hidden lg:block">
               <SmartRacecard racecard={racecard} />
             </div>

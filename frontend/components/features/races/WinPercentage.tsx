@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { RacecardRow } from "@/types";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
@@ -33,14 +34,16 @@ const HORSE_BOX_OFFSET: Record<number, string> = {
 
 type WinPercentageProps = {
   racecard: RacecardRow[];
+  editHref?: string;
 };
 
-export function WinPercentage({ racecard }: WinPercentageProps) {
+export function WinPercentage({ racecard, editHref }: WinPercentageProps) {
   const { t } = useLanguage();
+  const router = useRouter();
   const top4 = racecard.slice(0, 4);
 
   return (
-    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 py-0 sm:px-5 sm:py-0 lg:px-6 lg:py-0 h-full">
+    <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] px-4 pt-4 pb-0 sm:px-5 sm:pt-4 lg:px-6 lg:pt-5 h-full">
       <style>{`
         @keyframes track-breathe {
           0%, 100% {
@@ -63,6 +66,37 @@ export function WinPercentage({ racecard }: WinPercentageProps) {
           }
         }
       `}</style>
+      {/* Button row */}
+      <div className="flex justify-start mb-3">
+        {editHref ? (
+          <button
+            type="button"
+            onClick={() => router.push(editHref)}
+            className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px] cursor-pointer"
+            style={{ background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)" }}
+          >
+            <span
+              className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+              style={{ padding: "6px 12px", background: "#0d0d0d" }}
+            >
+              {t.races.winPercentage}
+            </span>
+          </button>
+        ) : (
+          <span
+            className="inline-flex shrink-0 items-center justify-center rounded-[44px] p-[1px] w-[99px] h-[29px] min-w-[99px]"
+            style={{ background: "radial-gradient(58.97% 354.93% at 15.38% 13.16%, #28E88E 0%, #168250 100%)" }}
+          >
+            <span
+              className="flex h-full w-full items-center justify-center rounded-[43px] font-inter font-medium text-[14px] leading-[100%] tracking-[-0.03em] text-center text-white"
+              style={{ padding: "6px 12px", background: "#0d0d0d" }}
+            >
+              {t.races.winPercentage}
+            </span>
+          </span>
+        )}
+      </div>
+
       <div className="relative flex items-center gap-0">
         {/* Track visual */}
         <div

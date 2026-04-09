@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Header, FloatingTelegram } from "@/components/layout";
+import { Header } from "@/components/layout";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { LanguageProvider } from "@/lib/context/LanguageContext";
 import "./globals.css";
@@ -7,6 +7,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Go Racing | 賽馬智能分析",
   description: "AI-powered horse racing analytics platform. 將複雜的賽馬數據轉化為清晰、自信的決策。",
+  icons: {
+    icon: "/assets/logo.png",
+    apple: "/assets/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +25,6 @@ export default function RootLayout({
           <AuthProvider>
             <Header />
             {children}
-            <FloatingTelegram />
           </AuthProvider>
         </LanguageProvider>
       </body>

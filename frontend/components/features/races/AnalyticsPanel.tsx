@@ -24,7 +24,7 @@ export function AnalyticsPanel({ pedigreeValues, radarLabels, winPct, donutSegme
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       <article className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#1a1a1a] p-4 sm:p-5 lg:p-6">
         <h3 className="font-inter text-[22px] font-semibold text-white mb-4 sm:mb-6">{t.races.aiWinProbability}</h3>
-        <div className="flex items-center justify-center min-h-[240px] w-full max-w-[280px] aspect-square sm:min-h-[320px] sm:max-w-[340px] mx-auto">
+        <div className="flex items-center justify-center min-h-[300px] w-full max-w-[340px] aspect-square sm:min-h-[400px] sm:max-w-[420px] mx-auto">
           <AIWinDonutChart winPct={winPct} otherSegments={donutSegments} />
         </div>
       </article>

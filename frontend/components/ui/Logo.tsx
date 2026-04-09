@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
 
-const LOGO_IMAGE = "/assets/Group.png";
+const LOGO_IMAGE = "/assets/logo.png";
 
 export function Logo({
   className = "",
