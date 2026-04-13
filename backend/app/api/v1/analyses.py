@@ -1,4 +1,7 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
@@ -13,6 +16,64 @@ from app.schemas.race_analysis import (
 )
 
 router = APIRouter(prefix="/analyses", tags=["analyses"])
+
+
+# ── Inline response models for /recent ──────────────────────────────────────
+class RecentAnalysisItem(BaseModel):
+    race_id: str
+    analysis_json: dict[str, Any]
+    created_at: str
+
+
+class RecentMeeting(BaseModel):
+    race_date: str
+    venue_code: str
+    analyses: list[RecentAnalysisItem]
+
+
+# Must be declared BEFORE /{race_id} so FastAPI doesn't match "recent" as a race_id
+@router.get("/recent", response_model=list[RecentMeeting])
+async def get_recent_analyses(db: AsyncSession = Depends(get_db)):
+    """Return the last 3 race meetings (by race_date + venue_code) that have saved analyses."""
+    # Step 1: find the 3 most recent distinct (race_date, venue_code) pairs
+    stmt = (
+        select(RaceAnalysis.race_date, RaceAnalysis.venue_code)
+        .group_by(RaceAnalysis.race_date, RaceAnalysis.venue_code)
+        .order_by(RaceAnalysis.race_date.desc())
+        .limit(3)
+    )
+    result = await db.execute(stmt)
+    meetings = result.all()
+
+    # Step 2: fetch all analyses for each meeting
+    response: list[RecentMeeting] = []
+    for race_date, venue_code in meetings:
+        stmt2 = (
+            select(RaceAnalysis)
+            .where(
+                RaceAnalysis.race_date == race_date,
+                RaceAnalysis.venue_code == venue_code,
+            )
+            .order_by(RaceAnalysis.created_at.asc())
+        )
+        result2 = await db.execute(stmt2)
+        analyses = result2.scalars().all()
+        response.append(
+            RecentMeeting(
+                race_date=race_date,
+                venue_code=venue_code,
+                analyses=[
+                    RecentAnalysisItem(
+                        race_id=a.race_id,
+                        analysis_json=a.analysis_json or {},
+                        created_at=a.created_at.isoformat(),
+                    )
+                    for a in analyses
+                ],
+            )
+        )
+
+    return response
 
 
 @router.get("/{race_id}", response_model=RaceAnalysisResponse)

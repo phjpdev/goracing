@@ -86,6 +86,16 @@ export function Header({ variant = "default" }: { variant?: HeaderVariant }) {
                     </Link>
                   )}
                   <Link
+                    href="/last-matches"
+                    className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/5 hover:text-white transition no-underline"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {locale === "zh-TW" ? "最近賽事" : "Last Matches"}
+                  </Link>
+
+                  <Link
                     href={manageHref}
                     className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/5 hover:text-white transition no-underline"
                   >
