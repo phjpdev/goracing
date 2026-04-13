@@ -17,6 +17,8 @@ class RaceAnalysis(Base):
     race_id: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     race_date: Mapped[str] = mapped_column(String, nullable=False)
     venue_code: Mapped[str] = mapped_column(String, nullable=False)
+    race_name_en: Mapped[str | None] = mapped_column(String, nullable=True)
+    race_name_ch: Mapped[str | None] = mapped_column(String, nullable=True)
     analysis_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

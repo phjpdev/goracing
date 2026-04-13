@@ -22,6 +22,8 @@ type AnalysisJson = {
 
 type RaceEntry = {
   race_id: string;
+  race_name_en: string | null;
+  race_name_ch: string | null;
   analysis_json: AnalysisJson;
   created_at: string;
 };
@@ -97,7 +99,6 @@ export default function LastMatchesPage() {
           </div>
         </div>
 
-        {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center gap-3 py-20 text-white/50">
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
@@ -105,21 +106,18 @@ export default function LastMatchesPage() {
           </div>
         )}
 
-        {/* Error */}
         {!loading && error && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center text-red-400">
             {error}
           </div>
         )}
 
-        {/* Empty */}
         {!loading && !error && meetings.length === 0 && (
           <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-12 text-center text-white/40">
             {locale === "zh-TW" ? "暫無已保存的賽事分析" : "No saved meeting analyses yet"}
           </div>
         )}
 
-        {/* Meetings */}
         {!loading && meetings.map((meeting) => {
           const venueLabel = VENUE_LABELS[meeting.venue_code] ?? { en: meeting.venue_code, zh: meeting.venue_code };
           const venue = locale === "zh-TW" ? venueLabel.zh : venueLabel.en;
@@ -150,6 +148,9 @@ export default function LastMatchesPage() {
                   const top4 = aj.topPicks?.slice(0, 4) ?? [];
                   const riskStyle = RISK_STYLES[aj.riskLevel] ?? RISK_STYLES.MEDIUM;
                   const href = `/races/${entry.race_id}?date=${meeting.race_date}&venue=${meeting.venue_code}`;
+                  const raceName = locale === "zh-TW"
+                    ? entry.race_name_ch || entry.race_name_en || entry.race_id
+                    : entry.race_name_en || entry.race_name_ch || entry.race_id;
 
                   return (
                     <Link
@@ -157,19 +158,21 @@ export default function LastMatchesPage() {
                       href={href}
                       className="group block rounded-xl border border-white/10 bg-[#1a1a1a] p-4 hover:border-white/20 hover:bg-[#1e1e1e] transition no-underline"
                     >
-                      {/* Card top row */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs text-white/40 font-mono">
-                          {entry.race_id.split("-").slice(-2).join("-")}
-                        </span>
+                      {/* Risk badge */}
+                      <div className="flex items-center justify-between mb-2">
                         <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${riskStyle}`}>
                           {aj.riskLevel}
                         </span>
                       </div>
 
+                      {/* Race name */}
+                      <p className="text-[14px] font-semibold text-white leading-snug line-clamp-2 mb-3 min-h-[42px]">
+                        {raceName}
+                      </p>
+
                       {/* Overall win % */}
                       <div className="mb-3 flex items-baseline gap-1.5">
-                        <span className="font-inter text-[28px] font-bold text-[#28E88E] leading-none">
+                        <span className="font-inter text-[26px] font-bold text-[#28E88E] leading-none">
                           {aj.overallWinPct}%
                         </span>
                         <span className="text-xs text-white/40">
@@ -200,7 +203,7 @@ export default function LastMatchesPage() {
                         ))}
                       </div>
 
-                      {/* View link indicator */}
+                      {/* View link */}
                       <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-end gap-1 text-xs text-white/30 group-hover:text-[#28E88E] transition">
                         {locale === "zh-TW" ? "查看詳情" : "View details"}
                         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

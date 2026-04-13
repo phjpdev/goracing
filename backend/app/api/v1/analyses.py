@@ -21,6 +21,8 @@ router = APIRouter(prefix="/analyses", tags=["analyses"])
 # ── Inline response models for /recent ──────────────────────────────────────
 class RecentAnalysisItem(BaseModel):
     race_id: str
+    race_name_en: str | None = None
+    race_name_ch: str | None = None
     analysis_json: dict[str, Any]
     created_at: str
 
@@ -65,6 +67,8 @@ async def get_recent_analyses(db: AsyncSession = Depends(get_db)):
                 analyses=[
                     RecentAnalysisItem(
                         race_id=a.race_id,
+                        race_name_en=a.race_name_en,
+                        race_name_ch=a.race_name_ch,
                         analysis_json=a.analysis_json or {},
                         created_at=a.created_at.isoformat(),
                     )
@@ -101,6 +105,8 @@ async def create_analysis(body: RaceAnalysisCreate, db: AsyncSession = Depends(g
         race_id=body.race_id,
         race_date=body.race_date,
         venue_code=body.venue_code,
+        race_name_en=body.race_name_en,
+        race_name_ch=body.race_name_ch,
         analysis_json=body.analysis_json,
     )
     db.add(analysis)

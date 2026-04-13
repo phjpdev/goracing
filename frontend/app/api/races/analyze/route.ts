@@ -25,6 +25,7 @@ type RaceInput = {
   id: string;
   no: number;
   raceName_en: string;
+  raceName_ch?: string;
   distance: number;
   go_en: string;
   raceClass_en: string;
@@ -257,6 +258,8 @@ export async function POST(request: NextRequest) {
             race_date: date,
             venue_code: venue,
             analysis_json: analysis,
+            race_name_en: race.raceName_en || null,
+            race_name_ch: race.raceName_ch || null,
           }),
         }).catch((e) => console.error("Failed to cache analysis:", e));
       }
