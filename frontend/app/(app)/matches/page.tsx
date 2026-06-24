@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MatchCard, OddsTable } from "@/components/features/matches";
+import { LoginRequiredModal } from "@/components/ui/LoginRequiredModal";
 import { VipPaywallModal } from "@/components/ui/VipPaywallModal";
 import { readMeetingsClientCache, writeMeetingsClientCache } from "@/lib/meetings/clientCache";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -26,6 +27,7 @@ function applyMeeting(
 export default function MatchesPage() {
   const { t, locale } = useLanguage();
   const { auth } = useAuth();
+  const isLoggedIn = auth?.authenticated === true;
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const isVip = !!auth?.vip_expiry_date && new Date(auth.vip_expiry_date).getTime() > Date.now();
   const [date, setDate] = useState(todayHK());
@@ -37,6 +39,7 @@ export default function MatchesPage() {
   const [error, setError] = useState("");
   const [upgradeMessage, setUpgradeMessage] = useState("");
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const cached = readMeetingsClientCache();
@@ -113,6 +116,7 @@ export default function MatchesPage() {
 
   return (
     <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
+      <LoginRequiredModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
       <VipPaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
@@ -159,9 +163,23 @@ export default function MatchesPage() {
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
             <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => {
-                const shouldBlockAnalysis = !isManager && !isVip;
+                const shouldBlockVip = isLoggedIn && !isManager && !isVip;
                 const shouldBlockLockedRace = race.isLocked && !isManager;
-                const shouldIntercept = shouldBlockAnalysis || shouldBlockLockedRace;
+
+                const handleViewDetails = () => {
+                  if (!isLoggedIn) {
+                    setLoginModalOpen(true);
+                    return;
+                  }
+                  if (shouldBlockVip) {
+                    setPaywallOpen(true);
+                    return;
+                  }
+                  if (shouldBlockLockedRace) {
+                    setUpgradeMessage("請升級VVIP");
+                  }
+                };
+
                 return (
                   <MatchCard
                     key={race.id}
@@ -177,16 +195,8 @@ export default function MatchesPage() {
                       setSelectedRace(race);
                     }}
                     onViewDetails={
-                      shouldIntercept
-                        ? () => {
-                            if (shouldBlockAnalysis) {
-                              setPaywallOpen(true);
-                              return;
-                            }
-                            if (shouldBlockLockedRace) {
-                              setUpgradeMessage("請升級VVIP");
-                            }
-                          }
+                      !isLoggedIn || shouldBlockVip || shouldBlockLockedRace
+                        ? handleViewDetails
                         : undefined
                     }
                     meetingDate={meeting.date}

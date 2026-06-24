@@ -136,6 +136,10 @@ export const zhTW = {
     creatingAccount: "建立帳號中…",
     signUp: "註冊",
     logIn: "登入",
+    loginRequiredTitle: "請先登入",
+    loginRequiredMessage: "登入後即可查看賽事分析結果。",
+    loginRequiredCta: "前往登入",
+    loginRequiredCancel: "稍後",
   },
 
   // Validation

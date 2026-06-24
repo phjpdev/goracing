@@ -1,16 +1,6 @@
-import { HeroSection, FeatureCards, VisualAnalyticsSection, RecordsSection, DisclaimerSection, ConnectSection } from "@/components/features/home";
-import { Footer } from "@/components/layout";
+import { redirect } from "next/navigation";
+import { ROUTES } from "@/lib/constants";
 
 export default function Home() {
-  return (
-    <>
-      <HeroSection />
-      <RecordsSection />
-      <FeatureCards />
-      <VisualAnalyticsSection />
-      <DisclaimerSection />
-      <ConnectSection />
-      <Footer />
-    </>
-  );
+  redirect(ROUTES.MATCHES);
 }

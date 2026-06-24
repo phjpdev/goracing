@@ -143,7 +143,7 @@ export function MobileBottomNav() {
     auth?.role === "admin" ? ROUTES.ADMIN_RECORDS : ROUTES.RECORDS;
   const memberHref = auth?.authenticated ? ROUTES.MEMBER : ROUTES.LOGIN;
 
-  const isHome = pathname === ROUTES.HOME;
+  const isHome = pathname === ROUTES.WELCOME;
   const isMatches =
     pathname === ROUTES.MATCHES ||
     pathname.startsWith("/races/") ||
@@ -162,7 +162,7 @@ export function MobileBottomNav() {
   const tabs: TabItem[] = [
     {
       key: "home",
-      href: ROUTES.HOME,
+      href: ROUTES.WELCOME,
       label: t.nav.home,
       icon: <HomeIcon active={isHome} />,
     },

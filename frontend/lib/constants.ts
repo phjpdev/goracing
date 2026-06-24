@@ -3,6 +3,7 @@
  */
 export const ROUTES = {
   HOME: "/",
+  WELCOME: "/welcome",
   LOGIN: "/login",
   SIGNUP: "/signup",
   MATCHES: "/matches",

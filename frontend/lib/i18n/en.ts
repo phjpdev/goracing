@@ -138,6 +138,10 @@ export const en: TranslationKeys = {
     creatingAccount: "Creating account…",
     signUp: "Sign Up",
     logIn: "Log In",
+    loginRequiredTitle: "Login Required",
+    loginRequiredMessage: "Please log in to view race analysis results.",
+    loginRequiredCta: "Go to Login",
+    loginRequiredCancel: "Not Now",
   },
 
   // Validation

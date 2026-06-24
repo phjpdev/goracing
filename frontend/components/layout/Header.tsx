@@ -36,7 +36,7 @@ export function Header({ variant = "default" }: { variant?: HeaderVariant }) {
     await fetch("/api/auth/logout", { method: "POST" });
     setDropdownOpen(false);
     await refreshAuth();
-    router.push(ROUTES.HOME);
+    router.push(ROUTES.MATCHES);
   };
 
   return (

@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
     }
 
     await refreshAuth();
-    router.push(ROUTES.HOME);
+    router.push(ROUTES.ADMIN_DASHBOARD);
   };
 
   return (

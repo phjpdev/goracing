@@ -37,7 +37,7 @@ export default function SubadminLoginPage() {
     }
 
     await refreshAuth();
-    router.push(ROUTES.HOME);
+    router.push(ROUTES.SUBADMIN_DASHBOARD);
   };
 
   return (

@@ -99,7 +99,7 @@ export default function SignUpPage() {
     }
 
     await refreshAuth();
-    router.push(ROUTES.HOME);
+    router.push(ROUTES.MATCHES);
   };
 
   return (

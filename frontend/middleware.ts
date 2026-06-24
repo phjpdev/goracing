@@ -4,6 +4,8 @@ import { ROUTES } from "@/lib/constants";
 
 const PUBLIC_ROUTES = [
   ROUTES.HOME,
+  ROUTES.WELCOME,
+  ROUTES.MATCHES,
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.PRIVACY_POLICY,
@@ -14,6 +16,10 @@ const PUBLIC_ROUTES = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname === ROUTES.HOME) {
+    return NextResponse.redirect(new URL(ROUTES.MATCHES, request.url));
+  }
 
   const isPublic =
     PUBLIC_ROUTES.some((route) => pathname === route) ||
