@@ -86,17 +86,18 @@ function NavTab({
     return (
       <Link
         href={item.href}
-        className="flex flex-1 flex-col items-center justify-end pb-0 min-w-0 no-underline"
+        className="flex flex-1 flex-col items-center justify-end pb-1 min-w-0 no-underline"
         aria-label={item.label}
         aria-current={active ? "page" : undefined}
       >
-        <span className="flex h-[54px] w-[72px] items-end justify-center rounded-t-full rounded-bl-none rounded-br-none bg-black shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+        <span className="flex h-[82px] w-[82px] items-center justify-center rounded-t-full rounded-bl-none rounded-br-none bg-black shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
           <Image
             src={LOGO_IMAGE}
             alt=""
-            width={52}
-            height={52}
-            className="h-[50px] w-[50px] object-contain object-bottom"
+            width={72}
+            height={72}
+            className="h-[52px] w-[52px] object-contain"
+            style={{ width: '68px', height: '80px', marginBottom: '-20px'}}
           />
         </span>
       </Link>
