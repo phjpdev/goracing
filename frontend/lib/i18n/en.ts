@@ -11,6 +11,15 @@ export const en: TranslationKeys = {
     records: "Records",
   },
 
+  nav: {
+    home: "Home",
+    matches: "Matches",
+    records: "Records",
+    member: "Member",
+    contact: "Contact",
+    manageMembers: "Manage Members",
+  },
+
   // Hero / Landing
   hero: {
     title: "Go Racing",

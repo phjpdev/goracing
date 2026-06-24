@@ -9,6 +9,15 @@ export const zhTW = {
     records: "記錄",
   },
 
+  nav: {
+    home: "首頁",
+    matches: "賽事",
+    records: "紀錄",
+    member: "會員",
+    contact: "聯繫我們",
+    manageMembers: "管理會員",
+  },
+
   // Hero / Landing
   hero: {
     title: "賽馬智能分析",

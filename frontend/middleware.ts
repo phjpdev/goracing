@@ -2,7 +2,15 @@ import { jwtVerify } from "jose";
 import { type NextRequest, NextResponse } from "next/server";
 import { ROUTES } from "@/lib/constants";
 
-const PUBLIC_ROUTES = [ROUTES.HOME, ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.PRIVACY_POLICY, ROUTES.ADMIN_LOGIN, ROUTES.SUBADMIN_LOGIN];
+const PUBLIC_ROUTES = [
+  ROUTES.HOME,
+  ROUTES.LOGIN,
+  ROUTES.SIGNUP,
+  ROUTES.PRIVACY_POLICY,
+  ROUTES.ADMIN_LOGIN,
+  ROUTES.SUBADMIN_LOGIN,
+  ROUTES.RECORDS,
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

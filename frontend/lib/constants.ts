@@ -13,5 +13,7 @@ export const ROUTES = {
   SUBADMIN_LOGIN: "/subadmin/login",
   SUBADMIN_DASHBOARD: "/subadmin",
   ADMIN_RECORDS: "/admin/records",
+  RECORDS: "/records",
+  MEMBER: "/member",
   LAST_MATCHES: "/last-matches",
 } as const;

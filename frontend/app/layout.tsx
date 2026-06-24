@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Header } from "@/components/layout";
+import { Header, MobileBottomNav } from "@/components/layout";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { LanguageProvider } from "@/lib/context/LanguageContext";
 import "./globals.css";
@@ -24,7 +24,10 @@ export default function RootLayout({
         <LanguageProvider>
           <AuthProvider>
             <Header />
-            {children}
+            <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+              {children}
+            </div>
+            <MobileBottomNav />
           </AuthProvider>
         </LanguageProvider>
       </body>
