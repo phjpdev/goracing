@@ -10,13 +10,6 @@ import { ROUTES } from "@/lib/constants";
 const LOGO_IMAGE = "/assets/logo.png";
 const TELEGRAM_URL = "https://t.me";
 
-const AUTH_PATHS = [
-  ROUTES.LOGIN,
-  ROUTES.SIGNUP,
-  ROUTES.ADMIN_LOGIN,
-  ROUTES.SUBADMIN_LOGIN,
-];
-
 function HomeIcon({ active }: { active: boolean }) {
   return (
     <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -146,10 +139,6 @@ export function MobileBottomNav() {
   const { auth } = useAuth();
   const { t } = useLanguage();
 
-  if (AUTH_PATHS.some((path) => pathname === path)) {
-    return null;
-  }
-
   const recordsHref =
     auth?.role === "admin" ? ROUTES.ADMIN_RECORDS : ROUTES.RECORDS;
   const memberHref = auth?.authenticated ? ROUTES.MEMBER : ROUTES.LOGIN;
@@ -163,7 +152,12 @@ export function MobileBottomNav() {
     pathname === ROUTES.RECORDS ||
     pathname.startsWith("/records/") ||
     pathname === ROUTES.ADMIN_RECORDS;
-  const isMember = pathname === ROUTES.MEMBER;
+  const isMember =
+    pathname === ROUTES.MEMBER ||
+    pathname === ROUTES.LOGIN ||
+    pathname === ROUTES.SIGNUP ||
+    pathname === ROUTES.ADMIN_LOGIN ||
+    pathname === ROUTES.SUBADMIN_LOGIN;
 
   const tabs: TabItem[] = [
     {
