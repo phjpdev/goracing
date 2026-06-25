@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/context/LanguageContext";
+import { ROUTES } from "@/lib/constants";
 
 function InstagramIcon() {
   return (
@@ -29,7 +30,7 @@ function TelegramIcon() {
 const SOCIAL_LINKS = [
   { icon: InstagramIcon, href: "https://instagram.com", label: "Instagram" },
   { icon: ThreadsIcon, href: "https://threads.net", label: "Threads" },
-  { icon: TelegramIcon, href: "https://t.me", label: "Telegram" },
+  { icon: TelegramIcon, href: ROUTES.TELEGRAM, label: "Telegram" },
 ];
 
 export function ConnectSection() {

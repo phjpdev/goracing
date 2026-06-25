@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/context/AuthContext";
+import { ROUTES } from "@/lib/constants";
 
 export function FloatingTelegram() {
   const { auth } = useAuth();
@@ -17,7 +18,7 @@ export function FloatingTelegram() {
         }
       `}</style>
       <a
-        href="https://t.me"
+        href={ROUTES.TELEGRAM}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Telegram"

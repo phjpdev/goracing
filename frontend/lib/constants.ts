@@ -17,4 +17,5 @@ export const ROUTES = {
   RECORDS: "/records",
   MEMBER: "/member",
   LAST_MATCHES: "/last-matches",
+  TELEGRAM: "https://t.me/gofootballai",
 } as const;

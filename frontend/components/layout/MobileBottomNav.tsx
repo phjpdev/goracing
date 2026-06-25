@@ -3,12 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { ROUTES } from "@/lib/constants";
 
 const LOGO_IMAGE = "/assets/logo.png";
-const TELEGRAM_URL = "https://t.me";
+const NAV_BAR_HEIGHT = 62;
+const LOGO_SIZE = 68;
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -63,7 +66,6 @@ type TabItem = {
   label: string;
   icon?: React.ReactNode;
   external?: boolean;
-  isCenter?: boolean;
 };
 
 function NavTab({
@@ -75,28 +77,6 @@ function NavTab({
 }) {
   const colorClass = active ? "text-[#f59e0b]" : "text-white/70";
 
-  if (item.isCenter) {
-    return (
-      <Link
-        href={item.href}
-        className="flex flex-1 flex-col items-center justify-end pb-1 min-w-0 no-underline"
-        aria-label={item.label}
-        aria-current={active ? "page" : undefined}
-      >
-        <span className="flex h-[82px] w-[82px] items-center justify-center rounded-t-full rounded-bl-none rounded-br-none bg-black shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
-          <Image
-            src={LOGO_IMAGE}
-            alt=""
-            width={72}
-            height={72}
-            className="h-[52px] w-[52px] object-contain"
-            style={{ width: '68px', height: '80px', marginBottom: '-20px'}}
-          />
-        </span>
-      </Link>
-    );
-  }
-
   const content = (
     <>
       <span className={colorClass}>{item.icon}</span>
@@ -106,7 +86,8 @@ function NavTab({
     </>
   );
 
-  const className = "flex flex-1 flex-col items-center justify-end pb-1 pt-2 no-underline min-w-0";
+  const className =
+    "flex h-full flex-1 flex-col items-center justify-end pb-1 pt-2 no-underline min-w-0";
 
   if (item.external) {
     return (
@@ -134,7 +115,7 @@ function NavTab({
   );
 }
 
-export function MobileBottomNav() {
+function BottomNavContent() {
   const pathname = usePathname();
   const { auth } = useAuth();
   const { t } = useLanguage();
@@ -167,12 +148,6 @@ export function MobileBottomNav() {
       icon: <HomeIcon active={isHome} />,
     },
     {
-      key: "matches",
-      href: ROUTES.MATCHES,
-      label: t.nav.matches,
-      isCenter: true,
-    },
-    {
       key: "records",
       href: recordsHref,
       label: t.nav.records,
@@ -186,7 +161,7 @@ export function MobileBottomNav() {
     },
     {
       key: "telegram",
-      href: TELEGRAM_URL,
+      href: ROUTES.TELEGRAM,
       label: t.nav.contact,
       external: true,
       icon: <TelegramIcon />,
@@ -203,15 +178,53 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="mobile-bottom-nav border-t border-white/10 bg-black md:hidden"
+      style={{ height: `calc(${NAV_BAR_HEIGHT}px + env(safe-area-inset-bottom, 0px))` }}
       aria-label="Mobile navigation"
     >
-      <div className="mx-auto flex h-[62px] max-w-lg items-end justify-between px-2">
-        {tabs.map((tab) => (
-          <NavTab key={tab.key} item={tab} active={activeByKey[tab.key]} />
-        ))}
+      <div
+        className="relative mx-auto grid h-full w-full max-w-lg grid-cols-5 items-stretch px-1"
+        style={{ height: NAV_BAR_HEIGHT }}
+      >
+        <NavTab item={tabs[0]} active={activeByKey.home} />
+        <span aria-hidden className="pointer-events-none" />
+        <NavTab item={tabs[1]} active={activeByKey.records} />
+        <NavTab item={tabs[2]} active={activeByKey.member} />
+        <NavTab item={tabs[3]} active={activeByKey.telegram} />
+
+        <Link
+          href={ROUTES.MATCHES}
+          className="absolute bottom-0 left-[30%] z-10 flex -translate-x-1/2 items-end justify-center no-underline"
+          style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
+          aria-label={t.nav.matches}
+          aria-current={isMatches ? "page" : undefined}
+        >
+          <span
+            className="flex items-center justify-center rounded-full bg-black shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
+            style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
+          >
+            <Image
+              src={LOGO_IMAGE}
+              alt=""
+              width={52}
+              height={52}
+              className="h-[52px] w-[52px] object-contain"
+            />
+          </span>
+        </Link>
       </div>
     </nav>
   );
+}
+
+export function MobileBottomNav() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(<BottomNavContent />, document.body);
 }
