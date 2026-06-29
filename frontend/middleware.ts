@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === ROUTES.HOME) {
-    return NextResponse.redirect(new URL(ROUTES.MATCHES, request.url));
+    return NextResponse.redirect(new URL(ROUTES.WELCOME, request.url));
   }
 
   const isPublic =

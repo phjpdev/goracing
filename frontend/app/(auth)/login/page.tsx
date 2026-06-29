@@ -56,7 +56,7 @@ export default function LoginPage() {
     }
 
     await refreshAuth();
-    router.push(ROUTES.MATCHES);
+    router.push(ROUTES.WELCOME);
   };
 
   return (

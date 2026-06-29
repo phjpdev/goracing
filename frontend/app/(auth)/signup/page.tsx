@@ -79,7 +79,7 @@ export default function SignUpPage() {
     }
 
     await refreshAuth();
-    router.push(ROUTES.MATCHES);
+    router.push(ROUTES.WELCOME);
   };
 
   return (

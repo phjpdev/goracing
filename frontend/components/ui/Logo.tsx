@@ -13,7 +13,7 @@ export function Logo({
 }) {
   return (
     <Link
-      href={ROUTES.MATCHES}
+      href={ROUTES.WELCOME}
       className={`inline-flex items-center gap-2 text-inherit no-underline ${className}`}
     >
       <div className="flex h-[30px] w-[48px] items-center justify-center shrink-0">
@@ -39,7 +39,7 @@ export function Logo({
 export function LogoCompact({ className = "" }: { className?: string }) {
   return (
     <Link
-      href={ROUTES.MATCHES}
+      href={ROUTES.WELCOME}
       className={`inline-flex items-center gap-2 text-inherit no-underline ${className}`}
     >
       <div className="flex h-[26px] w-[40px] sm:h-[30px] sm:w-[48px] items-center justify-center shrink-0">
