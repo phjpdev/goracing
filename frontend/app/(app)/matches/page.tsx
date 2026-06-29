@@ -161,7 +161,7 @@ export default function MatchesPage() {
 
         {meeting && meeting.races.length > 0 && (
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
-            <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto lg:pb-4 lg:pr-1 scrollbar-green">
+            <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto overflow-x-visible px-0.5 lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => {
                 const shouldBlockVip = isLoggedIn && !isManager && !isVip;
                 const shouldBlockLockedRace = race.isLocked && !isManager;

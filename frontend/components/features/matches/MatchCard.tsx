@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { MouseEvent } from "react";
+import { LedBorder } from "@/components/motion/LedBorder";
 import type { HKJCRace } from "@/types/race-meeting";
 import { ROUTES } from "@/lib/constants";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -24,13 +27,27 @@ function formatTime(isoString: string) {
   });
 }
 
-export function MatchCard({ race, index, isSelected, onClick, meetingDate, venueCode, onViewDetails }: MatchCardProps) {
+export function MatchCard({
+  race,
+  index,
+  isSelected,
+  onClick,
+  meetingDate,
+  venueCode,
+  onViewDetails,
+}: MatchCardProps) {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-TW";
-  const raceName = (isZh ? race.raceName_ch || race.raceName_en : race.raceName_en || race.raceName_ch) || `Race ${race.no}`;
-  const track = isZh ? race.raceTrack?.description_ch || race.raceTrack?.description_en : race.raceTrack?.description_en || race.raceTrack?.description_ch;
+  const raceName =
+    (isZh ? race.raceName_ch || race.raceName_en : race.raceName_en || race.raceName_ch) ||
+    `Race ${race.no}`;
+  const track = isZh
+    ? race.raceTrack?.description_ch || race.raceTrack?.description_en
+    : race.raceTrack?.description_en || race.raceTrack?.description_ch;
   const going = (isZh ? race.go_ch || race.go_en : race.go_en || race.go_ch) || "-";
-  const raceClass = (isZh ? race.raceClass_ch || race.raceClass_en : race.raceClass_en || race.raceClass_ch) || "-";
+  const raceClass =
+    (isZh ? race.raceClass_ch || race.raceClass_en : race.raceClass_en || race.raceClass_ch) ||
+    "-";
 
   const handleViewDetailsClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
@@ -39,19 +56,8 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
     onViewDetails();
   };
 
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => { if (e.key === "Enter") onClick(); }}
-      className={`w-full text-left rounded-xl border-l-4 p-4 transition-all cursor-pointer ${
-        isSelected
-          ? "border-l-[#28E88E] shadow-[0px_34px_74px_0px_#00000052]"
-          : "border-l-[#2a2a2a] bg-[#141414] hover:bg-[#1a1a1a]"
-      }`}
-      style={isSelected ? { background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 100%)" } : undefined}
-    >
+  const cardBody = (
+    <>
       <h3 className="font-inter text-sm font-bold text-white mb-3 flex items-center gap-2">
         <span className="min-w-0 truncate">
           {t.matches.match} {index}: {raceName}
@@ -72,9 +78,7 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
         <dd className="text-right text-red-400 font-medium">{t.matches.detected}</dd>
 
         <dt className="text-white/50">{t.matches.class}</dt>
-        <dd className="text-right text-white font-medium">
-          {raceClass}
-        </dd>
+        <dd className="text-right text-white font-medium">{raceClass}</dd>
 
         <dt className="text-white/50">{t.matches.track}</dt>
         <dd className="text-right text-[#28E88E] font-medium">{going}</dd>
@@ -98,6 +102,31 @@ export function MatchCard({ race, index, isSelected, onClick, meetingDate, venue
           </Link>
         </dd>
       </dl>
+    </>
+  );
+
+  const selectedInnerClass =
+    "rounded-xl p-4 shadow-[0px_34px_74px_0px_#00000052] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.12)_100%)]";
+  const defaultInnerClass =
+    "rounded-xl border-l-4 border-l-[#2a2a2a] bg-[#141414] p-4 transition-all hover:bg-[#1a1a1a]";
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") onClick();
+      }}
+      className="w-full text-left cursor-pointer"
+    >
+      {isSelected ? (
+        <LedBorder className="w-full" borderWidth={2} active>
+          <div className={selectedInnerClass}>{cardBody}</div>
+        </LedBorder>
+      ) : (
+        <div className={defaultInnerClass}>{cardBody}</div>
+      )}
     </div>
   );
 }

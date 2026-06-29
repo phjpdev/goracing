@@ -57,3 +57,62 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+@layer components {
+  @keyframes led-border-travel {
+    from {
+      stroke-dashoffset: 0;
+    }
+    to {
+      stroke-dashoffset: calc(-1 * var(--led-dash-total, 900px));
+    }
+  }
+
+  @keyframes led-border-heat-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  .led-border__track--dim {
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1.5px;
+  }
+
+  .led-border__track--heat-trail {
+    stroke-width: 2.5px;
+    opacity: 0.38;
+    animation:
+      led-border-travel 5.2s linear infinite,
+      led-border-heat-pulse 3.6s ease-in-out infinite;
+  }
+
+  .led-border__track--heat-glow {
+    stroke-width: 1.75px;
+    opacity: 0.68;
+    animation: led-border-travel 5.2s linear infinite;
+  }
+
+  .led-border__track--heat-core {
+    stroke-width: 1.25px;
+    stroke-linecap: round;
+    opacity: 1;
+    animation: led-border-travel 5.2s linear infinite;
+  }
+
+  .led-border__track--green.led-border__track--heat-trail {
+    filter: drop-shadow(0 0 4px rgba(40, 232, 142, 0.45));
+  }
+
+  .led-border__track--green.led-border__track--heat-glow {
+    filter: drop-shadow(0 0 8px rgba(40, 232, 142, 0.65));
+  }
+
+  .led-border__track--green.led-border__track--heat-core {
+    filter: drop-shadow(0 0 3px rgba(167, 243, 208, 0.9));
+  }
+}
