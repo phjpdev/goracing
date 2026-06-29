@@ -2,7 +2,8 @@
  * Application routes – single source of truth for URLs
  */
 export const MOBILE_BOTTOM_NAV_HEIGHT = 42;
-export const MOBILE_BOTTOM_NAV_LOGO = 46;
+export const MOBILE_BOTTOM_NAV_LOGO_WIDTH = 58;
+export const MOBILE_BOTTOM_NAV_LOGO_HEIGHT = 68;
 
 export const ROUTES = {
   HOME: "/",

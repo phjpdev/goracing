@@ -9,7 +9,8 @@
 @layer base {
   :root {
     --mobile-bottom-nav-height: 42px;
-    --mobile-bottom-nav-logo: 46px;
+    --mobile-bottom-nav-logo-width: 58px;
+    --mobile-bottom-nav-logo-height: 68px;
   }
 
   html, body {

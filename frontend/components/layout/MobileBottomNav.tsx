@@ -7,13 +7,13 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
-import { ROUTES, MOBILE_BOTTOM_NAV_HEIGHT, MOBILE_BOTTOM_NAV_LOGO } from "@/lib/constants";
+import { ROUTES, MOBILE_BOTTOM_NAV_HEIGHT, MOBILE_BOTTOM_NAV_LOGO_WIDTH, MOBILE_BOTTOM_NAV_LOGO_HEIGHT } from "@/lib/constants";
 
 const LOGO_IMAGE = "/assets/logo.png";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -26,7 +26,7 @@ function HomeIcon({ active }: { active: boolean }) {
 
 function RecordIcon({ active }: { active: boolean }) {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -39,7 +39,7 @@ function RecordIcon({ active }: { active: boolean }) {
 
 function MemberIcon({ active }: { active: boolean }) {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -52,7 +52,7 @@ function MemberIcon({ active }: { active: boolean }) {
 
 function TelegramIcon() {
   return (
-    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 448 512" aria-hidden>
+    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 448 512" aria-hidden>
       <path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z" />
     </svg>
   );
@@ -78,14 +78,14 @@ function NavTab({
   const content = (
     <>
       <span className={colorClass}>{item.icon}</span>
-      <span className={`mt-0.5 text-[8px] font-medium leading-none ${colorClass}`}>
+      <span className={`mt-1 text-[10px] font-medium leading-none ${colorClass}`}>
         {item.label}
       </span>
     </>
   );
 
   const className =
-    "flex h-full flex-1 flex-col items-center justify-end pb-0 pt-1 no-underline min-w-0";
+    "flex h-full flex-1 flex-col items-center justify-center gap-0.5 py-0.5 no-underline min-w-0";
 
   if (item.external) {
     return (
@@ -176,7 +176,7 @@ function BottomNavContent() {
 
   return (
     <nav
-      className="mobile-bottom-nav border-t border-white/10 bg-black md:hidden"
+      className="mobile-bottom-nav overflow-visible border-t border-white/10 bg-black md:hidden"
       style={{
         height: `calc(${MOBILE_BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`,
       }}
@@ -195,20 +195,26 @@ function BottomNavContent() {
         <Link
           href={ROUTES.MATCHES}
           className="absolute bottom-0 left-[30%] z-10 flex -translate-x-1/2 items-end justify-center no-underline"
-          style={{ width: `${MOBILE_BOTTOM_NAV_LOGO}px`, height: `${MOBILE_BOTTOM_NAV_LOGO}px` }}
+          style={{
+            width: `${MOBILE_BOTTOM_NAV_LOGO_WIDTH}px`,
+            height: `${MOBILE_BOTTOM_NAV_LOGO_HEIGHT}px`,
+          }}
           aria-label={t.nav.matches}
           aria-current={isMatches ? "page" : undefined}
         >
           <span
             className="flex items-center justify-center rounded-full bg-black shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-            style={{ width: `${MOBILE_BOTTOM_NAV_LOGO}px`, height: `${MOBILE_BOTTOM_NAV_LOGO}px` }}
+            style={{
+              width: `${MOBILE_BOTTOM_NAV_LOGO_WIDTH}px`,
+              height: `${MOBILE_BOTTOM_NAV_LOGO_HEIGHT}px`,
+            }}
           >
             <Image
               src={LOGO_IMAGE}
               alt=""
-              width={34}
-              height={34}
-              className="h-[34px] w-[34px] object-contain"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
             />
           </span>
         </Link>
