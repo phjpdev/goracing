@@ -161,6 +161,45 @@ export const en: TranslationKeys = {
     referralRequired: "Please select a referral source.",
   },
 
+  privacyPolicyPage: {
+    title: "Privacy Policy",
+    lastUpdated: "Last updated: June 2026",
+    sections: [
+      {
+        heading: "1. Introduction",
+        body: "Go Racing (\"we\", \"us\") respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you use our AI-powered horse racing analytics platform.",
+      },
+      {
+        heading: "2. Information We Collect",
+        body: "When you register an account, we collect your username and password (stored in encrypted form). We may also collect usage data such as login times, pages viewed, and feature usage to improve our services.",
+      },
+      {
+        heading: "3. How We Use Your Information",
+        body: "We use your information to create and manage your account, provide race analysis services, maintain platform security, and comply with applicable legal requirements. We do not sell your personal data to third parties.",
+      },
+      {
+        heading: "4. Data Security",
+        body: "We implement reasonable technical and organisational measures to protect your data, including password encryption and secure server environments. However, no internet transmission can be guaranteed to be completely secure.",
+      },
+      {
+        heading: "5. Cookies",
+        body: "We use cookies and similar technologies to maintain your login session and remember your language preferences. You can manage cookies through your browser settings, though some features may not function properly if cookies are disabled.",
+      },
+      {
+        heading: "6. Your Rights",
+        body: "You have the right to access, correct, or request deletion of your personal data. Please contact us through the channels provided on this platform for any such requests.",
+      },
+      {
+        heading: "7. Age Restriction",
+        body: "This platform is intended for users aged 18 and above only. We do not knowingly collect personal information from anyone under 18.",
+      },
+      {
+        heading: "8. Policy Updates",
+        body: "We may update this Privacy Policy from time to time. The revised version will be posted on this page. Continued use of the service constitutes acceptance of the updated policy.",
+      },
+    ],
+  },
+
   // Admin / Subadmin
   admin: {
     dashboard: "Admin Dashboard",
