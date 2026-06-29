@@ -124,6 +124,7 @@ export const en: TranslationKeys = {
     loginWelcome: "Welcome back to Go Racing, your AI powered racing modules",
     signupTitle: "Create Account",
     signupWelcome: "Join our AI-powered horse racing analytics platform",
+    username: "Username",
     email: "Email Address",
     password: "Password",
     confirmPassword: "Confirm Password",
@@ -146,6 +147,8 @@ export const en: TranslationKeys = {
 
   // Validation
   validation: {
+    usernameRequired: "Username is required.",
+    usernameInvalid: "Username must be 3–30 characters (letters, numbers, underscores only).",
     emailRequired: "Email is required.",
     emailInvalid: "Please enter a valid email address.",
     passwordRequired: "Password is required.",

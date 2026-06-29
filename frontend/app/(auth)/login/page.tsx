@@ -10,24 +10,26 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { ROUTES } from "@/lib/constants";
 
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
+
 export default function LoginPage() {
   const router = useRouter();
   const { refreshAuth } = useAuth();
   const { t } = useLanguage();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
-    const errors: { email?: string; password?: string } = {};
-    const trimmed = email.trim();
+    const errors: { username?: string; password?: string } = {};
+    const trimmed = username.trim();
 
     if (!trimmed) {
-      errors.email = t.validation.emailRequired;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      errors.email = t.validation.emailInvalid;
+      errors.username = t.validation.usernameRequired;
+    } else if (!USERNAME_PATTERN.test(trimmed)) {
+      errors.username = t.validation.usernameInvalid;
     }
 
     if (!password) {
@@ -45,7 +47,7 @@ export default function LoginPage() {
     if (!validate()) return;
 
     setLoading(true);
-    const result = await apiLogin(email.trim(), password);
+    const result = await apiLogin(username.trim(), password);
     setLoading(false);
 
     if ("error" in result) {
@@ -68,17 +70,18 @@ export default function LoginPage() {
 
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <TextField
-          id="email"
-          label={t.auth.email}
-          type="email"
-          placeholder={t.auth.email}
-          value={email}
+          id="username"
+          label={t.auth.username}
+          type="text"
+          placeholder={t.auth.username}
+          value={username}
           onChange={(e) => {
-            setEmail(e.target.value);
-            if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: undefined }));
+            setUsername(e.target.value);
+            if (fieldErrors.username) setFieldErrors((p) => ({ ...p, username: undefined }));
           }}
-          error={fieldErrors.email}
+          error={fieldErrors.username}
           disabled={loading}
+          autoComplete="username"
         />
         <PasswordField
           id="password"

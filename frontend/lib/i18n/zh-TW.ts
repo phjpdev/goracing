@@ -122,6 +122,7 @@ export const zhTW = {
     loginWelcome: "歡迎回到賽馬智能分析平台",
     signupTitle: "建立帳號",
     signupWelcome: "加入我們的AI賽馬分析平台",
+    username: "用戶名稱",
     email: "電郵地址",
     password: "密碼",
     confirmPassword: "確認密碼",
@@ -144,6 +145,8 @@ export const zhTW = {
 
   // Validation
   validation: {
+    usernameRequired: "請輸入用戶名稱。",
+    usernameInvalid: "用戶名稱須為3–30個字元，只可包含英文字母、數字及底線。",
     emailRequired: "請輸入電郵地址。",
     emailInvalid: "請輸入有效的電郵地址。",
     passwordRequired: "請輸入密碼。",

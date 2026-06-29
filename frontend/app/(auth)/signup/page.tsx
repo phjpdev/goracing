@@ -10,23 +10,19 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { ROUTES } from "@/lib/constants";
 
-const REFERRAL_OPTIONS = ["FACEBOOK", "INSTAGRAM", "THREADS"] as const;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
 
 type FieldErrors = {
-  email?: string;
+  username?: string;
   password?: string;
-  confirmPassword?: string;
-  referralSource?: string;
 };
 
 export default function SignUpPage() {
   const router = useRouter();
   const { refreshAuth } = useAuth();
   const { t } = useLanguage();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralSource, setReferralSource] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -35,12 +31,12 @@ export default function SignUpPage() {
 
   const validate = () => {
     const errors: FieldErrors = {};
-    const trimmed = email.trim();
+    const trimmed = username.trim();
 
     if (!trimmed) {
-      errors.email = t.validation.emailRequired;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      errors.email = t.validation.emailInvalid;
+      errors.username = t.validation.usernameRequired;
+    } else if (!USERNAME_PATTERN.test(trimmed)) {
+      errors.username = t.validation.usernameInvalid;
     }
 
     if (!password) {
@@ -51,16 +47,6 @@ export default function SignUpPage() {
       errors.password = t.validation.passwordUppercase;
     } else if (!/[0-9]/.test(password)) {
       errors.password = t.validation.passwordNumber;
-    }
-
-    if (!confirmPassword) {
-      errors.confirmPassword = t.validation.confirmRequired;
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = t.validation.confirmMismatch;
-    }
-
-    if (!referralSource) {
-      errors.referralSource = t.validation.referralRequired;
     }
 
     if (!privacyAccepted) {
@@ -84,13 +70,7 @@ export default function SignUpPage() {
     if (!validate()) return;
 
     setLoading(true);
-    const result = await apiSignup(
-      email.trim(),
-      password,
-      confirmPassword,
-      privacyAccepted,
-      referralSource || undefined
-    );
+    const result = await apiSignup(username.trim(), password, privacyAccepted);
     setLoading(false);
 
     if ("error" in result) {
@@ -113,17 +93,18 @@ export default function SignUpPage() {
 
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <TextField
-          id="email"
-          label={t.auth.email}
-          type="email"
-          placeholder={t.auth.email}
-          value={email}
+          id="username"
+          label={t.auth.username}
+          type="text"
+          placeholder={t.auth.username}
+          value={username}
           onChange={(e) => {
-            setEmail(e.target.value);
-            clearField("email");
+            setUsername(e.target.value);
+            clearField("username");
           }}
-          error={fieldErrors.email}
+          error={fieldErrors.username}
           disabled={loading}
+          autoComplete="username"
         />
         <PasswordField
           id="password"
@@ -137,54 +118,6 @@ export default function SignUpPage() {
           error={fieldErrors.password}
           disabled={loading}
         />
-        <PasswordField
-          id="confirmPassword"
-          label={t.auth.confirmPassword}
-          placeholder={t.auth.confirmPassword}
-          value={confirmPassword}
-          onChange={(e) => {
-            setConfirmPassword(e.target.value);
-            clearField("confirmPassword");
-          }}
-          error={fieldErrors.confirmPassword}
-          disabled={loading}
-        />
-
-        {/* Referral Source Select */}
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="referralSource"
-            className="font-inter text-[13px] sm:text-[14px] font-medium text-[#B3B3B3]"
-          >
-            {t.auth.referralSource}
-          </label>
-          <select
-            id="referralSource"
-            value={referralSource}
-            onChange={(e) => {
-              setReferralSource(e.target.value);
-              clearField("referralSource");
-            }}
-            disabled={loading}
-            className={`w-full bg-[#1A1F2E] border rounded-lg px-4 py-3 text-white text-[14px] outline-none transition-colors focus:border-[#28E88E]/50 appearance-none ${
-              fieldErrors.referralSource ? "border-red-400" : "border-white/10"
-            }`}
-          >
-            <option value="" disabled className="text-[#B3B3B3]">
-              {t.auth.referralSource}
-            </option>
-            {REFERRAL_OPTIONS.map((opt) => (
-              <option key={opt} value={opt} className="bg-[#1A1F2E] text-white">
-                {opt}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.referralSource && (
-            <p className="font-inter text-[12px] text-red-400 mt-0.5">
-              {fieldErrors.referralSource}
-            </p>
-          )}
-        </div>
 
         <CheckboxField
           id="privacyPolicy"

@@ -2,26 +2,24 @@ type ApiSuccess = { success: true };
 type ApiError = { error: string };
 type AuthResult = ApiSuccess | ApiError;
 
-export async function apiLogin(email: string, password: string): Promise<AuthResult> {
+export async function apiLogin(username: string, password: string): Promise<AuthResult> {
   const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ username, password }),
   });
   return res.json();
 }
 
 export async function apiSignup(
-  email: string,
+  username: string,
   password: string,
-  confirm_password: string,
-  privacy_policy_accepted: boolean,
-  referral_source?: string
+  privacy_policy_accepted: boolean
 ): Promise<AuthResult> {
   const res = await fetch("/api/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, confirm_password, privacy_policy_accepted, referral_source }),
+    body: JSON.stringify({ username, password, privacy_policy_accepted }),
   });
   return res.json();
 }

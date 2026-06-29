@@ -27,7 +27,10 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    username: Mapped[str | None] = mapped_column(
+        String, unique=True, index=True, nullable=True
+    )
+    email: Mapped[str | None] = mapped_column(String, unique=True, index=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole), nullable=False, default=UserRole.member

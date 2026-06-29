@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import datetime
 
@@ -5,26 +6,29 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 from app.models.user import ReferralSource, UserRole
 
+_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,30}$")
+
 
 class SignupRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
-    confirm_password: str
     privacy_policy_accepted: bool
-    referral_source: ReferralSource | None = None
+
+    @field_validator("username")
+    @classmethod
+    def username_valid(cls, v: str) -> str:
+        trimmed = v.strip()
+        if not _USERNAME_PATTERN.match(trimmed):
+            raise ValueError(
+                "Username must be 3–30 characters and contain only letters, numbers, and underscores"
+            )
+        return trimmed
 
     @field_validator("password")
     @classmethod
     def password_length(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
-        return v
-
-    @field_validator("confirm_password")
-    @classmethod
-    def passwords_match(cls, v: str, info) -> str:
-        if "password" in info.data and v != info.data["password"]:
-            raise ValueError("Passwords do not match")
         return v
 
     @field_validator("privacy_policy_accepted")
@@ -36,8 +40,16 @@ class SignupRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
+
+    @field_validator("username")
+    @classmethod
+    def username_not_empty(cls, v: str) -> str:
+        trimmed = v.strip()
+        if not trimmed:
+            raise ValueError("Username is required")
+        return trimmed
 
 
 class CreateUserRequest(BaseModel):
@@ -81,7 +93,8 @@ class TokenResponse(BaseModel):
 
 class UserResponse(BaseModel):
     id: uuid.UUID
-    email: str
+    username: str | None = None
+    email: str | None = None
     role: UserRole
     is_active: bool
     referral_source: str | None = None

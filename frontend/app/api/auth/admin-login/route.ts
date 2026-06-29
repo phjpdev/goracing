@@ -5,13 +5,17 @@ const TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
 
 export async function POST(request: Request) {
   const body = await request.json();
+  const loginBody = {
+    username: body.username ?? body.email,
+    password: body.password,
+  };
 
   let res: Response;
   try {
     res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(loginBody),
     });
   } catch {
     return NextResponse.json(
