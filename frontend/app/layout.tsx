@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Header, MobileBottomNav } from "@/components/layout";
+import { ConditionalHeader, MobileBottomNav } from "@/components/layout";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { LanguageProvider } from "@/lib/context/LanguageContext";
 import "./globals.css";
@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className="overflow-x-hidden font-sans bg-black text-white flex min-h-dvh flex-col md:min-h-screen">
         <LanguageProvider>
           <AuthProvider>
-            <Header />
+            <ConditionalHeader />
             <div className="flex min-h-0 flex-1 flex-col pb-[calc(42px+env(safe-area-inset-bottom,0px))] md:pb-0">
               {children}
             </div>
