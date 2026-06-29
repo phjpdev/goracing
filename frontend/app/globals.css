@@ -7,6 +7,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --mobile-bottom-nav-height: 42px;
+    --mobile-bottom-nav-logo: 46px;
+  }
+
   html, body {
     @apply min-h-screen bg-black font-sans text-white antialiased;
     scrollbar-width: none;

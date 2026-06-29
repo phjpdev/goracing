@@ -115,7 +115,7 @@ export default function MatchesPage() {
   }, [date, isManager]);
 
   return (
-    <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
+    <div className="h-full min-h-0 overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
       <LoginRequiredModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
       <VipPaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
@@ -142,7 +142,7 @@ export default function MatchesPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 mx-auto w-full max-w-[1600px] px-3 pb-4 sm:px-6 lg:px-8">
+      <div className="flex-1 min-h-0 mx-auto w-full max-w-[1600px] px-3 pb-2 sm:px-6 sm:pb-4 lg:px-8">
         {upgradeMessage && (
           <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-amber-200 text-sm mb-3">
             {upgradeMessage}
