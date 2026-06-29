@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
-import { ROUTES, MOBILE_BOTTOM_NAV_HEIGHT, MOBILE_BOTTOM_NAV_LOGO_WIDTH, MOBILE_BOTTOM_NAV_LOGO_HEIGHT } from "@/lib/constants";
+import { ROUTES, MOBILE_BOTTOM_NAV_HEIGHT, MOBILE_BOTTOM_NAV_LOGO_WIDTH, MOBILE_BOTTOM_NAV_LOGO_HEIGHT, MOBILE_BOTTOM_NAV_LOGO_IMAGE } from "@/lib/constants";
 
 const LOGO_IMAGE = "/assets/logo.png";
 
@@ -212,9 +212,13 @@ function BottomNavContent() {
             <Image
               src={LOGO_IMAGE}
               alt=""
-              width={48}
-              height={48}
-              className="h-12 w-12 object-contain"
+              width={MOBILE_BOTTOM_NAV_LOGO_IMAGE}
+              height={MOBILE_BOTTOM_NAV_LOGO_IMAGE}
+              className="object-contain"
+              style={{
+                width: `${MOBILE_BOTTOM_NAV_LOGO_IMAGE}px`,
+                height: `${MOBILE_BOTTOM_NAV_LOGO_IMAGE}px`,
+              }}
             />
           </span>
         </Link>
