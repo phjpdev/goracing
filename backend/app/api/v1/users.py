@@ -126,6 +126,20 @@ async def update_user(
 
     update_data = body.model_dump(exclude_unset=True)
 
+    if "role" in update_data:
+        if current_user.role != UserRole.admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can change user roles",
+            )
+        new_role = update_data["role"]
+        if user.role in (UserRole.admin, UserRole.subadmin):
+            if new_role not in (UserRole.admin, UserRole.subadmin):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Admin accounts can only be assigned admin or subadmin role",
+                )
+
     if "password" in update_data:
         pw = update_data.pop("password")
         if pw is not None:

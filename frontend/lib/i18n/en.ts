@@ -221,6 +221,7 @@ export const en: TranslationKeys = {
     actions: "Actions",
     add: "Add",
     edit: "Edit Member",
+    editAdmin: "Edit Admin",
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",

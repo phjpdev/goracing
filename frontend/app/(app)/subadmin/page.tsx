@@ -5,7 +5,8 @@ import { useLanguage } from "@/lib/context/LanguageContext";
 
 type UserRow = {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   role: string;
   is_active: boolean;
   referral_source: string | null;
@@ -122,8 +123,9 @@ export default function SubadminDashboard() {
     const q = search.toLowerCase();
     return users.filter(
       (u) =>
-        u.email.toLowerCase().includes(q) ||
-        (u.referral_source && u.referral_source.toLowerCase().includes(q))
+        (u.email?.toLowerCase().includes(q) ?? false) ||
+        (u.username?.toLowerCase().includes(q) ?? false) ||
+        (u.referral_source?.toLowerCase().includes(q) ?? false)
     );
   }, [users, search]);
 
@@ -208,7 +210,7 @@ export default function SubadminDashboard() {
                 const days = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
                 return (
                   <tr key={u.id} className="border-b border-white/5">
-                    <td className="py-3 pr-4 text-white">{u.email}</td>
+                    <td className="py-3 pr-4 text-white">{u.email ?? u.username ?? ""}</td>
                     <td className="py-3 pr-4">
                       {days != null ? (
                         <span className="inline-block bg-[#28E88E] text-[#020308] text-xs font-bold px-2.5 py-1 rounded-md">

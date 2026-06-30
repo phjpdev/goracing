@@ -5,7 +5,8 @@ import { useLanguage } from "@/lib/context/LanguageContext";
 
 type UserRow = {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   role: string;
   is_active: boolean;
   referral_source: string | null;
@@ -166,8 +167,9 @@ export default function MembersPage() {
     const q = search.toLowerCase();
     return list.filter(
       (u) =>
-        u.email.toLowerCase().includes(q) ||
-        (u.referral_source && u.referral_source.toLowerCase().includes(q))
+        (u.email?.toLowerCase().includes(q) ?? false) ||
+        (u.username?.toLowerCase().includes(q) ?? false) ||
+        (u.referral_source?.toLowerCase().includes(q) ?? false)
     );
   }, [members, search, vipFilter]);
 
@@ -213,7 +215,7 @@ export default function MembersPage() {
       : "30";
     setEditingMember(u);
     setEditForm({
-      email: u.email,
+      email: u.email ?? "",
       password: "",
       referral_source: u.referral_source ?? "",
       price: u.price != null ? String(u.price) : "",
@@ -229,7 +231,7 @@ export default function MembersPage() {
     setLoading(true);
 
     const body: Record<string, unknown> = {};
-    if (editForm.email && editForm.email !== editingMember.email) body.email = editForm.email;
+    if (editForm.email && editForm.email !== (editingMember.email ?? "")) body.email = editForm.email;
     if (editForm.password) body.password = editForm.password;
     if (editForm.referral_source !== (editingMember.referral_source ?? "")) body.referral_source = editForm.referral_source || null;
     if (editForm.price !== (editingMember.price != null ? String(editingMember.price) : ""))
@@ -336,7 +338,7 @@ export default function MembersPage() {
                 const days = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
                 return (
                   <tr key={u.id} className="border-b border-white/5">
-                    <td className="py-3 pr-4 text-white">{u.email}</td>
+                    <td className="py-3 pr-4 text-white">{u.email ?? u.username ?? ""}</td>
                     <td className="py-3 pr-4">
                       {days != null ? (
                         <span className="inline-block bg-[#28E88E] text-[#020308] text-xs font-bold px-2.5 py-1 rounded-md">

@@ -219,6 +219,7 @@ export const zhTW = {
     actions: "操作",
     add: "添加",
     edit: "編輯會員",
+    editAdmin: "編輯管理員",
     save: "儲存",
     cancel: "取消",
     delete: "刪除",

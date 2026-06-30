@@ -72,6 +72,7 @@ class CreateUserRequest(BaseModel):
 class UpdateUserRequest(BaseModel):
     email: EmailStr | None = None
     password: str | None = None
+    role: UserRole | None = None
     referral_source: ReferralSource | None = None
     vip_expiry_date: datetime | None = None
     age_range: str | None = None
