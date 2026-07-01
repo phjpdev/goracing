@@ -10,11 +10,13 @@ type AuthState = {
 
 type AuthContextValue = {
   auth: AuthState;
+  authLoading: boolean;
   refreshAuth: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue>({
   auth: null,
+  authLoading: true,
   refreshAuth: async () => {},
 });
 
@@ -36,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshAuth]);
 
   return (
-    <AuthContext.Provider value={{ auth, refreshAuth }}>
+    <AuthContext.Provider value={{ auth, authLoading: auth === null, refreshAuth }}>
       {children}
     </AuthContext.Provider>
   );

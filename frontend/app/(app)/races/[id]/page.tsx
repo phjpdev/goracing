@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { WinPercentage, SmartRacecard, AnalyticsPanel } from "@/components/features/races";
 import { VipPaywallModal } from "@/components/ui/VipPaywallModal";
+import { isActiveVip } from "@/lib/auth/vip";
 import { ROUTES } from "@/lib/constants";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -93,13 +93,11 @@ function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" 
 
 export default function RaceDetailPage() {
   const { t, locale } = useLanguage();
-  const { auth } = useAuth();
+  const { auth, authLoading } = useAuth();
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const isAdmin = auth?.role === "admin";
-  const authLoading = auth === null;
-  const isVip = !!auth?.vip_expiry_date && new Date(auth.vip_expiry_date).getTime() > Date.now();
+  const isVip = isActiveVip(auth?.vip_expiry_date);
   const showVipPaywall = !authLoading && !isManager && !isVip;
-  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const raceId = (params?.id as string) ?? "";
@@ -112,7 +110,6 @@ export default function RaceDetailPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [aiError, setAiError] = useState("");
   const [error, setError] = useState("");
-  const [paywallDismissed, setPaywallDismissed] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
 
   // 1. Fetch HKJC meeting data and find the race
@@ -177,14 +174,6 @@ export default function RaceDetailPage() {
         setAnalyzing(false);
       });
   }, [hkjcRace, retryCount, isManager, isVip, authLoading]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (paywallDismissed) return;
-    if (isManager) return;
-    if (isVip) return;
-    setPaywallOpen(true);
-  }, [authLoading, paywallDismissed, isManager, isVip]);
 
   // Persist the latest race analysis for landing page visuals
   useEffect(() => {
@@ -322,11 +311,7 @@ export default function RaceDetailPage() {
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       <VipPaywallModal
         open={paywallOpen}
-        onClose={() => {
-          setPaywallOpen(false);
-          setPaywallDismissed(true);
-          if (showVipPaywall) router.replace(ROUTES.MATCHES);
-        }}
+        onClose={() => setPaywallOpen(false)}
       />
       <main className="mx-auto w-full max-w-[1600px] space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         {/* Back + title (top row) + status pill (mobile left) */}
@@ -370,7 +355,19 @@ export default function RaceDetailPage() {
 
         {/* Stat bar removed */}
 
-        {/* AI Analysis loading */}
+        {/* AI Analysis — VIP / admin only */}
+        {showVipPaywall && !analyzing && !analysis && !aiError && (
+          <div className="rounded-xl border border-white/10 bg-[#141414] p-6 flex flex-col items-center gap-4 text-center">
+            <p className="font-inter text-sm text-white/70">付费後可查看分析</p>
+            <button
+              type="button"
+              onClick={() => setPaywallOpen(true)}
+              className="px-5 py-2 rounded-lg bg-[#28E88E] text-[#020308] text-sm font-semibold hover:bg-[#28E88E]/90 transition"
+            >
+              升級 VIP
+            </button>
+          </div>
+        )}
         {analyzing && (
           <div className="flex items-center gap-3 rounded-xl border border-[#28E88E]/20 bg-[#1a2e23] p-4">
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#28E88E]/30 border-t-[#28E88E]" />

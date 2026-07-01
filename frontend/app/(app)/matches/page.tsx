@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { MatchCard, OddsTable } from "@/components/features/matches";
 import { LoginRequiredModal } from "@/components/ui/LoginRequiredModal";
-import { VipPaywallModal } from "@/components/ui/VipPaywallModal";
 import { readMeetingsClientCache, writeMeetingsClientCache } from "@/lib/meetings/clientCache";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -26,10 +25,9 @@ function applyMeeting(
 
 export default function MatchesPage() {
   const { t, locale } = useLanguage();
-  const { auth } = useAuth();
+  const { auth, authLoading } = useAuth();
   const isLoggedIn = auth?.authenticated === true;
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
-  const isVip = !!auth?.vip_expiry_date && new Date(auth.vip_expiry_date).getTime() > Date.now();
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState<(typeof VENUE_CODES)[number]>("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
@@ -38,7 +36,6 @@ export default function MatchesPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [upgradeMessage, setUpgradeMessage] = useState("");
-  const [paywallOpen, setPaywallOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
@@ -112,12 +109,11 @@ export default function MatchesPage() {
       });
 
     return () => controller.abort();
-  }, [date, isManager]);
+  }, [date, isManager, authLoading]);
 
   return (
     <div className="h-full min-h-0 overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
       <LoginRequiredModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
-      <VipPaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <div className="shrink-0 mx-auto w-full max-w-[1600px] px-3 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           {meeting && (
@@ -163,16 +159,12 @@ export default function MatchesPage() {
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
             <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto overflow-x-visible px-0.5 lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => {
-                const shouldBlockVip = isLoggedIn && !isManager && !isVip;
                 const shouldBlockLockedRace = race.isLocked && !isManager;
 
                 const handleViewDetails = () => {
+                  if (authLoading) return;
                   if (!isLoggedIn) {
                     setLoginModalOpen(true);
-                    return;
-                  }
-                  if (shouldBlockVip) {
-                    setPaywallOpen(true);
                     return;
                   }
                   if (shouldBlockLockedRace) {
@@ -195,7 +187,7 @@ export default function MatchesPage() {
                       setSelectedRace(race);
                     }}
                     onViewDetails={
-                      !isLoggedIn || shouldBlockVip || shouldBlockLockedRace
+                      authLoading || !isLoggedIn || shouldBlockLockedRace
                         ? handleViewDetails
                         : undefined
                     }

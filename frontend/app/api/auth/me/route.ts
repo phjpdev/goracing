@@ -17,6 +17,7 @@ export async function GET() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
       if (res.ok) {
         const user = await res.json();
