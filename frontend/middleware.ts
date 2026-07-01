@@ -23,6 +23,7 @@ export async function middleware(request: NextRequest) {
 
   const isPublic =
     PUBLIC_ROUTES.some((route) => pathname === route) ||
+    pathname.startsWith("/races") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/assets") ||
     pathname.startsWith("/api");

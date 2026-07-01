@@ -19,8 +19,17 @@ type UserRow = {
 type MemberForm = {
   username: string;
   password: string;
+  isVip: boolean;
+  vipDuration: string;
 };
 
+const VIP_DURATIONS = [
+  { value: "3", labelKey: "days3" },
+  { value: "15", labelKey: "days15" },
+  { value: "30", labelKey: "days30" },
+  { value: "90", labelKey: "days90" },
+  { value: "365", labelKey: "days365" },
+] as const;
 const ROWS_PER_PAGE = 10;
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
 
@@ -52,6 +61,12 @@ function daysUntil(iso: string): number | null {
 
 function memberDisplayName(u: UserRow) {
   return u.username ?? u.email ?? "";
+}
+
+function computeVipExpiry(days: string): string {
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days));
+  return d.toISOString();
 }
 
 function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
@@ -119,9 +134,9 @@ export default function MembersPage() {
   const [vipFilter, setVipFilter] = useState(false);
   const [page, setPage] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
-  const [addForm, setAddForm] = useState<MemberForm>({ username: "", password: "" });
+  const [addForm, setAddForm] = useState<MemberForm>({ username: "", password: "", isVip: false, vipDuration: "30" });
   const [editingMember, setEditingMember] = useState<UserRow | null>(null);
-  const [editForm, setEditForm] = useState<MemberForm>({ username: "", password: "" });
+  const [editForm, setEditForm] = useState<MemberForm>({ username: "", password: "", isVip: false, vipDuration: "30" });
   const [deletingUser, setDeletingUser] = useState<UserRow | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -182,6 +197,7 @@ export default function MembersPage() {
         username: addForm.username.trim(),
         password: addForm.password,
         role: "member",
+        vip_expiry_date: addForm.isVip ? computeVipExpiry(addForm.vipDuration) : undefined,
       }),
     });
     setLoading(false);
@@ -191,15 +207,23 @@ export default function MembersPage() {
       return;
     }
     setShowAdd(false);
-    setAddForm({ username: "", password: "" });
+    setAddForm({ username: "", password: "", isVip: false, vipDuration: "30" });
     fetchUsers();
   };
 
   const openEdit = (u: UserRow) => {
+    const remaining = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
+    const hasVip = remaining != null;
+    const durations = [3, 15, 30, 90, 365];
+    const closestDuration = hasVip
+      ? String(durations.reduce((prev, curr) => Math.abs(curr - remaining!) < Math.abs(prev - remaining!) ? curr : prev))
+      : "30";
     setEditingMember(u);
     setEditForm({
       username: u.username ?? "",
       password: "",
+      isVip: hasVip,
+      vipDuration: closestDuration,
     });
     setError("");
   };
@@ -220,6 +244,15 @@ export default function MembersPage() {
     const currentUsername = editingMember.username ?? "";
     if (editForm.username.trim() !== currentUsername) body.username = editForm.username.trim();
     if (editForm.password) body.password = editForm.password;
+
+    const hadVip = editingMember.vip_expiry_date && daysUntil(editingMember.vip_expiry_date) != null;
+    if (editForm.isVip && !hadVip) {
+      body.vip_expiry_date = computeVipExpiry(editForm.vipDuration);
+    } else if (editForm.isVip && hadVip) {
+      body.vip_expiry_date = computeVipExpiry(editForm.vipDuration);
+    } else if (!editForm.isVip && hadVip) {
+      body.vip_expiry_date = null;
+    }
 
     const res = await fetch(`/api/users/${editingMember.id}`, {
       method: "PATCH",
@@ -244,6 +277,8 @@ export default function MembersPage() {
     setDeletingUser(null);
     fetchUsers();
   };
+
+  const durationLabel = (key: string) => t.admin[key as keyof typeof t.admin] ?? key;
 
   const memberFormFields = (
     form: MemberForm,
@@ -270,6 +305,31 @@ export default function MembersPage() {
           className={inputClass + " pr-10"}
         />
       </div>
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.isVip}
+            onChange={(e) => setForm((f) => ({ ...f, isVip: e.target.checked }))}
+            className="w-4 h-4 accent-[#28E88E]"
+          />
+          <span className="text-sm text-white">{t.admin.setVip}</span>
+        </label>
+      </div>
+      {form.isVip && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-[#B3B3B3]">{t.admin.vipDuration}</label>
+          <select
+            value={form.vipDuration}
+            onChange={(e) => setForm((f) => ({ ...f, vipDuration: e.target.value }))}
+            className={inputClass}
+          >
+            {VIP_DURATIONS.map((d) => (
+              <option key={d.value} value={d.value}>{durationLabel(d.labelKey)}</option>
+            ))}
+          </select>
+        </div>
+      )}
     </>
   );
 

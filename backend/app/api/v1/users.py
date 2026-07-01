@@ -35,6 +35,7 @@ async def create_user(
             username=body.username,
             hashed_password=hash_password(body.password),
             role=body.role,
+            vip_expiry_date=body.vip_expiry_date,
             privacy_policy_accepted=True,
         )
     else:

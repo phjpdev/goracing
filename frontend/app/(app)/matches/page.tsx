@@ -162,7 +162,6 @@ export default function MatchesPage() {
                 const shouldBlockLockedRace = race.isLocked && !isManager;
 
                 const handleViewDetails = () => {
-                  if (authLoading) return;
                   if (!isLoggedIn) {
                     setLoginModalOpen(true);
                     return;
@@ -187,9 +186,11 @@ export default function MatchesPage() {
                       setSelectedRace(race);
                     }}
                     onViewDetails={
-                      authLoading || !isLoggedIn || shouldBlockLockedRace
+                      !isLoggedIn
                         ? handleViewDetails
-                        : undefined
+                        : shouldBlockLockedRace
+                          ? handleViewDetails
+                          : undefined
                     }
                     meetingDate={meeting.date}
                     venueCode={meeting.venueCode}
