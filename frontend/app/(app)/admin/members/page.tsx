@@ -16,33 +16,13 @@ type UserRow = {
   created_at: string;
 };
 
-type EditForm = {
-  email: string;
+type MemberForm = {
+  username: string;
   password: string;
-  referral_source: string;
-  price: string;
-  isVip: boolean;
-  vipDuration: string;
 };
 
-type AddMemberForm = {
-  email: string;
-  password: string;
-  referral_source: string;
-  price: string;
-  isVip: boolean;
-  vipDuration: string;
-};
-
-const REFERRAL_OPTIONS = ["FACEBOOK", "INSTAGRAM", "THREADS"] as const;
-const VIP_DURATIONS = [
-  { value: "3", labelKey: "days3" },
-  { value: "15", labelKey: "days15" },
-  { value: "30", labelKey: "days30" },
-  { value: "90", labelKey: "days90" },
-  { value: "365", labelKey: "days365" },
-] as const;
 const ROWS_PER_PAGE = 10;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
 
 function formatDate(iso: string, locale: string) {
   const d = new Date(iso);
@@ -70,10 +50,8 @@ function daysUntil(iso: string): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function computeVipExpiry(days: string): string {
-  const d = new Date();
-  d.setDate(d.getDate() + Number(days));
-  return d.toISOString();
+function memberDisplayName(u: UserRow) {
+  return u.username ?? u.email ?? "";
 }
 
 function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
@@ -90,7 +68,6 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
   );
 }
 
-/* Eye icon SVGs */
 const EyeOpen = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -142,9 +119,9 @@ export default function MembersPage() {
   const [vipFilter, setVipFilter] = useState(false);
   const [page, setPage] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
-  const [addForm, setAddForm] = useState<AddMemberForm>({ email: "", password: "", referral_source: "", price: "", isVip: false, vipDuration: "30" });
+  const [addForm, setAddForm] = useState<MemberForm>({ username: "", password: "" });
   const [editingMember, setEditingMember] = useState<UserRow | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>({ email: "", password: "", referral_source: "", price: "", isVip: false, vipDuration: "30" });
+  const [editForm, setEditForm] = useState<MemberForm>({ username: "", password: "" });
   const [deletingUser, setDeletingUser] = useState<UserRow | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -167,9 +144,8 @@ export default function MembersPage() {
     const q = search.toLowerCase();
     return list.filter(
       (u) =>
-        (u.email?.toLowerCase().includes(q) ?? false) ||
         (u.username?.toLowerCase().includes(q) ?? false) ||
-        (u.referral_source?.toLowerCase().includes(q) ?? false)
+        (u.email?.toLowerCase().includes(q) ?? false)
     );
   }, [members, search, vipFilter]);
 
@@ -179,19 +155,33 @@ export default function MembersPage() {
   const inputClass =
     "w-full bg-[#1A1F2E] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-[#28E88E]/50";
 
+  const validateUsername = (username: string) => {
+    const trimmed = username.trim();
+    if (!trimmed) return t.validation.usernameRequired;
+    if (!USERNAME_PATTERN.test(trimmed)) return t.validation.usernameInvalid;
+    return "";
+  };
+
   const handleAdd = async () => {
+    const usernameError = validateUsername(addForm.username);
+    if (usernameError) {
+      setError(usernameError);
+      return;
+    }
+    if (!addForm.password) {
+      setError(t.validation.passwordRequired);
+      return;
+    }
+
     setError("");
     setLoading(true);
     const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: addForm.email.trim(),
+        username: addForm.username.trim(),
         password: addForm.password,
         role: "member",
-        referral_source: addForm.referral_source || undefined,
-        price: addForm.price ? Number(addForm.price) : undefined,
-        vip_expiry_date: addForm.isVip ? computeVipExpiry(addForm.vipDuration) : undefined,
       }),
     });
     setLoading(false);
@@ -201,52 +191,35 @@ export default function MembersPage() {
       return;
     }
     setShowAdd(false);
-    setAddForm({ email: "", password: "", referral_source: "", price: "", isVip: false, vipDuration: "30" });
+    setAddForm({ username: "", password: "" });
     fetchUsers();
   };
 
   const openEdit = (u: UserRow) => {
-    const remaining = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
-    const hasVip = remaining != null;
-    // Find closest matching duration option
-    const durations = [3, 15, 30, 90, 365];
-    const closestDuration = hasVip
-      ? String(durations.reduce((prev, curr) => Math.abs(curr - remaining!) < Math.abs(prev - remaining!) ? curr : prev))
-      : "30";
     setEditingMember(u);
     setEditForm({
-      email: u.email ?? "",
+      username: u.username ?? "",
       password: "",
-      referral_source: u.referral_source ?? "",
-      price: u.price != null ? String(u.price) : "",
-      isVip: hasVip,
-      vipDuration: closestDuration,
     });
     setError("");
   };
 
   const handleSaveEdit = async () => {
     if (!editingMember) return;
+
+    const usernameError = validateUsername(editForm.username);
+    if (usernameError) {
+      setError(usernameError);
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     const body: Record<string, unknown> = {};
-    if (editForm.email && editForm.email !== (editingMember.email ?? "")) body.email = editForm.email;
+    const currentUsername = editingMember.username ?? "";
+    if (editForm.username.trim() !== currentUsername) body.username = editForm.username.trim();
     if (editForm.password) body.password = editForm.password;
-    if (editForm.referral_source !== (editingMember.referral_source ?? "")) body.referral_source = editForm.referral_source || null;
-    if (editForm.price !== (editingMember.price != null ? String(editingMember.price) : ""))
-      body.price = editForm.price ? Number(editForm.price) : null;
-
-    // VIP: if checkbox is on, set expiry from duration; if off, clear it
-    const hadVip = editingMember.vip_expiry_date && daysUntil(editingMember.vip_expiry_date) != null;
-    if (editForm.isVip && !hadVip) {
-      body.vip_expiry_date = computeVipExpiry(editForm.vipDuration);
-    } else if (editForm.isVip && hadVip) {
-      // Only update if duration was explicitly changed (re-send new expiry)
-      body.vip_expiry_date = computeVipExpiry(editForm.vipDuration);
-    } else if (!editForm.isVip && hadVip) {
-      body.vip_expiry_date = null;
-    }
 
     const res = await fetch(`/api/users/${editingMember.id}`, {
       method: "PATCH",
@@ -272,12 +245,36 @@ export default function MembersPage() {
     fetchUsers();
   };
 
-  // Type helper for duration label keys
-  const durationLabel = (key: string) => t.admin[key as keyof typeof t.admin] ?? key;
+  const memberFormFields = (
+    form: MemberForm,
+    setForm: React.Dispatch<React.SetStateAction<MemberForm>>,
+    passwordPlaceholder?: string
+  ) => (
+    <>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-[#B3B3B3]">{t.auth.username}</label>
+        <input
+          type="text"
+          value={form.username}
+          onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+          className={inputClass}
+          autoComplete="off"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-[#B3B3B3]">{t.admin.password}</label>
+        <PasswordInput
+          value={form.password}
+          onChange={(v) => setForm((f) => ({ ...f, password: v }))}
+          placeholder={passwordPlaceholder}
+          className={inputClass + " pr-10"}
+        />
+      </div>
+    </>
+  );
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-[#28E88E]">{t.admin.members}</h2>
         <button
@@ -288,7 +285,6 @@ export default function MembersPage() {
         </button>
       </div>
 
-      {/* Search + VIP filter */}
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-md">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#B3B3B3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,12 +310,11 @@ export default function MembersPage() {
         </button>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-[#B3B3B3] border-b border-white/10">
-              <th className="text-left py-3 pr-4 font-medium">{t.admin.email}</th>
+              <th className="text-left py-3 pr-4 font-medium">{t.auth.username}</th>
               <th className="text-left py-3 pr-4 font-medium">{t.admin.vipExpiry}</th>
               <th className="text-left py-3 pr-4 font-medium">{t.admin.referralSource}</th>
               <th className="text-left py-3 pr-4 font-medium">{t.admin.createdAt}</th>
@@ -338,7 +333,7 @@ export default function MembersPage() {
                 const days = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
                 return (
                   <tr key={u.id} className="border-b border-white/5">
-                    <td className="py-3 pr-4 text-white">{u.email ?? u.username ?? ""}</td>
+                    <td className="py-3 pr-4 text-white">{memberDisplayName(u)}</td>
                     <td className="py-3 pr-4">
                       {days != null ? (
                         <span className="inline-block bg-[#28E88E] text-[#020308] text-xs font-bold px-2.5 py-1 rounded-md">
@@ -368,7 +363,6 @@ export default function MembersPage() {
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between mt-4 text-sm">
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -387,53 +381,10 @@ export default function MembersPage() {
         </button>
       </div>
 
-      {/* ═══ Add Member Modal ═══ */}
       <Modal open={showAdd} onClose={() => setShowAdd(false)}>
         <h3 className="text-lg font-semibold mb-4">{t.admin.add}</h3>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.email}</label>
-            <input type="email" value={addForm.email} onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))} className={inputClass} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.password}</label>
-            <PasswordInput value={addForm.password} onChange={(v) => setAddForm((f) => ({ ...f, password: v }))} className={inputClass + " pr-10"} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.auth.referralSource}</label>
-            <select value={addForm.referral_source} onChange={(e) => setAddForm((f) => ({ ...f, referral_source: e.target.value }))} className={inputClass}>
-              <option value="">{t.auth.referralSource}</option>
-              {REFERRAL_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.price}</label>
-            <input type="number" value={addForm.price} onChange={(e) => setAddForm((f) => ({ ...f, price: e.target.value }))} className={inputClass} />
-          </div>
-
-          {/* VIP checkbox + duration */}
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={addForm.isVip}
-                onChange={(e) => setAddForm((f) => ({ ...f, isVip: e.target.checked }))}
-                className="w-4 h-4 accent-[#28E88E]"
-              />
-              <span className="text-sm text-white">{t.admin.setVip}</span>
-            </label>
-          </div>
-          {addForm.isVip && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-[#B3B3B3]">{t.admin.vipDuration}</label>
-              <select value={addForm.vipDuration} onChange={(e) => setAddForm((f) => ({ ...f, vipDuration: e.target.value }))} className={inputClass}>
-                {VIP_DURATIONS.map((d) => (
-                  <option key={d.value} value={d.value}>{durationLabel(d.labelKey)}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
+          {memberFormFields(addForm, setAddForm)}
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <div className="flex justify-end gap-3 mt-2">
             <button onClick={() => setShowAdd(false)} className="text-sm text-[#B3B3B3] hover:text-white">{t.admin.cancel}</button>
@@ -442,53 +393,15 @@ export default function MembersPage() {
         </div>
       </Modal>
 
-      {/* ═══ Edit Member Modal ═══ */}
       <Modal open={!!editingMember} onClose={() => setEditingMember(null)}>
         <h3 className="text-lg font-semibold mb-4">{t.admin.edit}</h3>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.email}</label>
-            <input type="email" value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} className={inputClass} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.password}</label>
-            <PasswordInput value={editForm.password} onChange={(v) => setEditForm((f) => ({ ...f, password: v }))} placeholder="••••••••" className={inputClass + " pr-10"} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.auth.referralSource}</label>
-            <select value={editForm.referral_source} onChange={(e) => setEditForm((f) => ({ ...f, referral_source: e.target.value }))} className={inputClass}>
-              <option value="">{t.auth.referralSource}</option>
-              {REFERRAL_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.price}</label>
-            <input type="number" value={editForm.price} onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value }))} className={inputClass} />
-          </div>
-
-          {/* VIP checkbox + duration */}
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editForm.isVip}
-                onChange={(e) => setEditForm((f) => ({ ...f, isVip: e.target.checked }))}
-                className="w-4 h-4 accent-[#28E88E]"
-              />
-              <span className="text-sm text-white">{t.admin.setVip}</span>
-            </label>
-          </div>
-          {editForm.isVip && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-[#B3B3B3]">{t.admin.vipDuration}</label>
-              <select value={editForm.vipDuration} onChange={(e) => setEditForm((f) => ({ ...f, vipDuration: e.target.value }))} className={inputClass}>
-                {VIP_DURATIONS.map((d) => (
-                  <option key={d.value} value={d.value}>{durationLabel(d.labelKey)}</option>
-                ))}
-              </select>
-            </div>
+          {memberFormFields(editForm, setEditForm, "••••••••")}
+          {editingMember?.email && !editingMember.username && (
+            <p className="text-xs text-[#B3B3B3]">
+              {t.admin.legacyEmailLogin}: {editingMember.email}
+            </p>
           )}
-
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <div className="flex justify-end gap-3 mt-2">
             <button onClick={() => setEditingMember(null)} className="text-sm text-[#B3B3B3] hover:text-white">{t.admin.cancel}</button>
@@ -497,7 +410,6 @@ export default function MembersPage() {
         </div>
       </Modal>
 
-      {/* ═══ Delete Confirm Modal ═══ */}
       <Modal open={!!deletingUser} onClose={() => setDeletingUser(null)}>
         <h3 className="text-lg font-semibold mb-4">{t.admin.delete}</h3>
         <p className="text-[#B3B3B3] text-sm mb-6">{t.admin.confirmDelete}</p>

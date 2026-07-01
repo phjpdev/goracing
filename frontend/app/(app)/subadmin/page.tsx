@@ -17,13 +17,12 @@ type UserRow = {
 };
 
 type AddMemberForm = {
-  email: string;
+  username: string;
   password: string;
-  referral_source: string;
 };
 
-const REFERRAL_OPTIONS = ["FACEBOOK", "INSTAGRAM", "THREADS"] as const;
 const ROWS_PER_PAGE = 10;
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
 
 function formatDate(iso: string, locale: string) {
   const d = new Date(iso);
@@ -107,7 +106,7 @@ export default function SubadminDashboard() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
-  const [addForm, setAddForm] = useState<AddMemberForm>({ email: "", password: "", referral_source: "" });
+  const [addForm, setAddForm] = useState<AddMemberForm>({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -136,16 +135,29 @@ export default function SubadminDashboard() {
     "w-full bg-[#1A1F2E] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-[#28E88E]/50";
 
   const handleAdd = async () => {
+    const trimmed = addForm.username.trim();
+    if (!trimmed) {
+      setError(t.validation.usernameRequired);
+      return;
+    }
+    if (!USERNAME_PATTERN.test(trimmed)) {
+      setError(t.validation.usernameInvalid);
+      return;
+    }
+    if (!addForm.password) {
+      setError(t.validation.passwordRequired);
+      return;
+    }
+
     setError("");
     setLoading(true);
     const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: addForm.email.trim(),
+        username: trimmed,
         password: addForm.password,
         role: "member",
-        referral_source: addForm.referral_source || undefined,
       }),
     });
     setLoading(false);
@@ -155,7 +167,7 @@ export default function SubadminDashboard() {
       return;
     }
     setShowAdd(false);
-    setAddForm({ email: "", password: "", referral_source: "" });
+    setAddForm({ username: "", password: "" });
     fetchUsers();
   };
 
@@ -192,7 +204,7 @@ export default function SubadminDashboard() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-[#B3B3B3] border-b border-white/10">
-              <th className="text-left py-3 pr-4 font-medium">{t.admin.email}</th>
+              <th className="text-left py-3 pr-4 font-medium">{t.auth.username}</th>
               <th className="text-left py-3 pr-4 font-medium">{t.admin.vipExpiry}</th>
               <th className="text-left py-3 pr-4 font-medium">{t.admin.referralSource}</th>
               <th className="text-left py-3 font-medium">{t.admin.createdAt}</th>
@@ -210,7 +222,7 @@ export default function SubadminDashboard() {
                 const days = u.vip_expiry_date ? daysUntil(u.vip_expiry_date) : null;
                 return (
                   <tr key={u.id} className="border-b border-white/5">
-                    <td className="py-3 pr-4 text-white">{u.email ?? u.username ?? ""}</td>
+                    <td className="py-3 pr-4 text-white">{u.username ?? u.email ?? ""}</td>
                     <td className="py-3 pr-4">
                       {days != null ? (
                         <span className="inline-block bg-[#28E88E] text-[#020308] text-xs font-bold px-2.5 py-1 rounded-md">
@@ -241,12 +253,13 @@ export default function SubadminDashboard() {
         <h3 className="text-lg font-semibold mb-4">{t.subadmin.addMember}</h3>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.email}</label>
+            <label className="text-sm text-[#B3B3B3]">{t.auth.username}</label>
             <input
-              type="email"
-              value={addForm.email}
-              onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
+              type="text"
+              value={addForm.username}
+              onChange={(e) => setAddForm((f) => ({ ...f, username: e.target.value }))}
               className={inputClass}
+              autoComplete="off"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -257,19 +270,6 @@ export default function SubadminDashboard() {
               onChange={(e) => setAddForm((f) => ({ ...f, password: e.target.value }))}
               className={inputClass}
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B3B3B3]">{t.admin.referralSource}</label>
-            <select
-              value={addForm.referral_source}
-              onChange={(e) => setAddForm((f) => ({ ...f, referral_source: e.target.value }))}
-              className={inputClass}
-            >
-              <option value="">{t.admin.referralSource}</option>
-              {REFERRAL_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <div className="flex justify-end gap-3 mt-2">

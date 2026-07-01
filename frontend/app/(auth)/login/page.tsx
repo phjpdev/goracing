@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/context/LanguageContext";
 import { ROUTES } from "@/lib/constants";
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,30}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,8 +29,8 @@ export default function LoginPage() {
 
     if (!trimmed) {
       errors.username = t.validation.usernameRequired;
-    } else if (!USERNAME_PATTERN.test(trimmed)) {
-      errors.username = t.validation.usernameInvalid;
+    } else if (!USERNAME_PATTERN.test(trimmed) && !EMAIL_PATTERN.test(trimmed)) {
+      errors.username = t.validation.loginIdentifierInvalid;
     }
 
     if (!password) {

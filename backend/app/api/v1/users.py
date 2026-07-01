@@ -26,20 +26,28 @@ async def create_user(
             detail="Subadmins can only create member accounts",
         )
 
-    result = await db.execute(select(User).where(User.email == body.email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+    if body.role == UserRole.member:
+        result = await db.execute(select(User).where(User.username == body.username))
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
 
-    user = User(
-        email=body.email,
-        hashed_password=hash_password(body.password),
-        role=body.role,
-        referral_source=body.referral_source,
-        vip_expiry_date=body.vip_expiry_date,
-        age_range=body.age_range,
-        price=body.price,
-        privacy_policy_accepted=True,
-    )
+        user = User(
+            username=body.username,
+            hashed_password=hash_password(body.password),
+            role=body.role,
+            privacy_policy_accepted=True,
+        )
+    else:
+        result = await db.execute(select(User).where(User.email == body.email))
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+        user = User(
+            email=body.email,
+            hashed_password=hash_password(body.password),
+            role=body.role,
+            privacy_policy_accepted=True,
+        )
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -144,6 +152,15 @@ async def update_user(
         pw = update_data.pop("password")
         if pw is not None:
             user.hashed_password = hash_password(pw)
+
+    if "username" in update_data and update_data["username"] != user.username:
+        existing = await db.execute(
+            select(User).where(User.username == update_data["username"])
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Username already taken"
+            )
 
     if "email" in update_data and update_data["email"] != user.email:
         existing = await db.execute(

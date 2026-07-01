@@ -2,7 +2,7 @@ import re
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 
 from app.models.user import ReferralSource, UserRole
 
@@ -53,13 +53,26 @@ class LoginRequest(BaseModel):
 
 
 class CreateUserRequest(BaseModel):
-    email: EmailStr
+    username: str | None = None
+    email: EmailStr | None = None
     password: str
     role: UserRole
     referral_source: ReferralSource | None = None
     vip_expiry_date: datetime | None = None
     age_range: str | None = None
     price: float | None = None
+
+    @field_validator("username")
+    @classmethod
+    def username_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        trimmed = v.strip()
+        if not _USERNAME_PATTERN.match(trimmed):
+            raise ValueError(
+                "Username must be 3–30 characters and contain only letters, numbers, and underscores"
+            )
+        return trimmed
 
     @field_validator("password")
     @classmethod
@@ -68,8 +81,19 @@ class CreateUserRequest(BaseModel):
             raise ValueError("Password must be at least 8 characters")
         return v
 
+    @model_validator(mode="after")
+    def validate_identity(self):
+        if self.role == UserRole.member:
+            if not self.username:
+                raise ValueError("Username is required")
+        elif self.role in (UserRole.admin, UserRole.subadmin):
+            if not self.email:
+                raise ValueError("Email is required")
+        return self
+
 
 class UpdateUserRequest(BaseModel):
+    username: str | None = None
     email: EmailStr | None = None
     password: str | None = None
     role: UserRole | None = None
@@ -77,6 +101,18 @@ class UpdateUserRequest(BaseModel):
     vip_expiry_date: datetime | None = None
     age_range: str | None = None
     price: float | None = None
+
+    @field_validator("username")
+    @classmethod
+    def username_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        trimmed = v.strip()
+        if not _USERNAME_PATTERN.match(trimmed):
+            raise ValueError(
+                "Username must be 3–30 characters and contain only letters, numbers, and underscores"
+            )
+        return trimmed
 
     @field_validator("password")
     @classmethod
