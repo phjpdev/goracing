@@ -15,6 +15,8 @@ type MatchCardProps = {
   meetingDate: string;
   venueCode: string;
   onViewDetails?: () => void;
+  /** Past race the current user may not see results for — renders the button inert. */
+  detailsDisabled?: boolean;
 };
 
 function formatTime(isoString: string) {
@@ -35,6 +37,7 @@ export function MatchCard({
   meetingDate,
   venueCode,
   onViewDetails,
+  detailsDisabled = false,
 }: MatchCardProps) {
   const { t, locale } = useLanguage();
   const isZh = locale === "zh-TW";
@@ -93,13 +96,24 @@ export function MatchCard({
 
         <dt className="text-white/50">{t.matches.winRate}</dt>
         <dd className="text-right">
-          <Link
-            href={`${ROUTES.RACE(race.id)}?date=${meetingDate}&venue=${venueCode}`}
-            onClick={handleViewDetailsClick}
-            className="inline-block rounded-md border border-[#28E88E] px-3 py-1 text-[#28E88E] text-xs font-medium hover:bg-[#28E88E] hover:text-[#020308] transition-colors no-underline"
-          >
-            {t.matches.viewDetails}
-          </Link>
+          {detailsDisabled ? (
+            <button
+              type="button"
+              disabled
+              title={t.matches.pastRaceAdminOnly}
+              className="inline-block cursor-not-allowed rounded-md border border-white/15 bg-transparent px-3 py-1 text-white/30 text-xs font-medium"
+            >
+              {t.matches.viewDetails}
+            </button>
+          ) : (
+            <Link
+              href={`${ROUTES.RACE(race.id)}?date=${meetingDate}&venue=${venueCode}`}
+              onClick={handleViewDetailsClick}
+              className="inline-block rounded-md border border-[#28E88E] px-3 py-1 text-[#28E88E] text-xs font-medium hover:bg-[#28E88E] hover:text-[#020308] transition-colors no-underline"
+            >
+              {t.matches.viewDetails}
+            </Link>
+          )}
         </dd>
       </dl>
     </>

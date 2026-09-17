@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { MediaLightbox } from "@/components/ui/MediaLightbox";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
 type RecordItem = {
@@ -30,6 +31,8 @@ function formatDate(iso: string, locale: string) {
 export function RecordsSection() {
   const { t, locale } = useLanguage();
   const [records, setRecords] = useState<RecordItem[]>([]);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const closeLightbox = useCallback(() => setLightboxSrc(null), []);
 
   useEffect(() => {
     fetch("/api/records")
@@ -59,23 +62,40 @@ export function RecordsSection() {
               key={record.id}
               className="snap-start shrink-0 w-[300px] sm:w-[340px] overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06]"
             >
-              {/* Thumbnail */}
+              {/* Thumbnail — opens the media in a lightbox */}
               <div className="relative h-[200px] sm:h-[220px] w-full bg-[#0D1117] flex items-center justify-center">
                 {firstMedia ? (
-                  isVideo(firstMedia) ? (
-                    <video
-                      src={`/api${firstMedia}`}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      src={`/api${firstMedia}`}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  )
+                  <button
+                    type="button"
+                    onClick={() => setLightboxSrc(firstMedia)}
+                    aria-label={t.records.viewMedia}
+                    className="group relative block h-full w-full cursor-zoom-in border-0 p-0 bg-transparent"
+                  >
+                    {isVideo(firstMedia) ? (
+                      <video
+                        src={`/api${firstMedia}`}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={`/api${firstMedia}`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/25">
+                      <svg
+                        className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-80"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                    </span>
+                  </button>
                 ) : (
                   <svg className="w-12 h-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -98,6 +118,8 @@ export function RecordsSection() {
           );
         })}
       </div>
+
+      <MediaLightbox src={lightboxSrc} onClose={closeLightbox} />
     </section>
   );
 }

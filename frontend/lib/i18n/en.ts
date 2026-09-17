@@ -83,6 +83,7 @@ export const en: TranslationKeys = {
     races: "races",
     noMeeting: "No meeting found for this date and venue.",
     loadingRaces: "Loading races…",
+    pastRaceAdminOnly: "Race finished — results are admin only",
   },
 
   // Race analysis page
@@ -115,6 +116,7 @@ export const en: TranslationKeys = {
     missingContext: "Missing race context. Go back to matches.",
     raceNotFound: "Race not found",
     failedToLoad: "Failed to load race data.",
+    pastRaceAdminOnly: "Race finished — results are admin only",
     failedAi: "Failed to connect to AI service.",
   },
 
@@ -274,5 +276,6 @@ export const en: TranslationKeys = {
     cancel: "Cancel",
     delete: "Delete",
     readMore: "Read More",
+    viewMedia: "View image",
   },
 } as const;

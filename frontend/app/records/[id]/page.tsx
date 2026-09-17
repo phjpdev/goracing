@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { MediaLightbox } from "@/components/ui/MediaLightbox";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
 type RecordDetail = {
@@ -42,6 +43,7 @@ export default function RecordDetailPage() {
   const [record, setRecord] = useState<RecordDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const closeLightbox = useCallback(() => setSelectedMedia(null), []);
 
   useEffect(() => {
     if (!id) return;
@@ -76,36 +78,7 @@ export default function RecordDetailPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Lightbox */}
-      {selectedMedia && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setSelectedMedia(null)}
-        >
-          <button
-            className="absolute top-6 right-6 text-white/60 hover:text-white text-3xl"
-            onClick={() => setSelectedMedia(null)}
-          >
-            ×
-          </button>
-          {isVideo(selectedMedia) ? (
-            <video
-              src={`/api${selectedMedia}`}
-              className="max-w-full max-h-[90vh] rounded-lg"
-              controls
-              autoPlay
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <img
-              src={`/api${selectedMedia}`}
-              alt=""
-              className="max-w-full max-h-[90vh] rounded-lg object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
-        </div>
-      )}
+      <MediaLightbox src={selectedMedia} onClose={closeLightbox} />
 
       <main className="mx-auto w-full max-w-[900px] px-5 sm:px-6 py-8 sm:py-12">
         {/* Back link */}

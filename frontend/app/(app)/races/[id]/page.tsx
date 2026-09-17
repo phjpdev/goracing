@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { WinPercentage, SmartRacecard, AnalyticsPanel } from "@/components/features/races";
+import { WinPercentage, SmartRacecard, AnalyticsPanel, AiWinProbabilityCard } from "@/components/features/races";
 import { VipPaywallModal } from "@/components/ui/VipPaywallModal";
 import { isActiveVip } from "@/lib/auth/vip";
+import { canViewPastRaces, isPastRace } from "@/lib/races/access";
 import { ROUTES } from "@/lib/constants";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -97,6 +98,7 @@ export default function RaceDetailPage() {
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
   const isAdmin = auth?.role === "admin";
   const isVip = isActiveVip(auth?.vip_expiry_date);
+  const canSeePastRaces = canViewPastRaces(auth?.role);
   const showVipPaywall = !authLoading && !isManager && !isVip;
   const params = useParams();
   const searchParams = useSearchParams();
@@ -151,6 +153,7 @@ export default function RaceDetailPage() {
     if (!hkjcRace) return;
     if (authLoading) return;
     if (hkjcRace.isLocked && !isManager) return;
+    if (!canSeePastRaces && isPastRace(hkjcRace)) return;
     if (!isManager && !isVip) return;
     setAnalyzing(true);
     setAiError("");
@@ -173,7 +176,7 @@ export default function RaceDetailPage() {
         setAiError(t.races.failedAi);
         setAnalyzing(false);
       });
-  }, [hkjcRace, retryCount, isManager, isVip, authLoading]);
+  }, [hkjcRace, retryCount, isManager, isVip, canSeePastRaces, authLoading]);
 
   // Persist the latest race analysis for landing page visuals
   useEffect(() => {
@@ -264,6 +267,31 @@ export default function RaceDetailPage() {
       return (
         <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
           <p className="text-amber-200 text-base sm:text-lg font-inter">請升級VVIP</p>
+          <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
+            {t.races.back}
+          </Link>
+        </div>
+      );
+    }
+  }
+
+  if (isPastRace(hkjcRace)) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
+          <div className="flex items-center gap-3 text-white/60">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+            {t.races.loadingRaceData}
+          </div>
+        </div>
+      );
+    }
+    if (!canSeePastRaces) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-amber-200 text-base sm:text-lg font-inter text-center">
+            {t.races.pastRaceAdminOnly}
+          </p>
           <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
             {t.races.back}
           </Link>
@@ -390,7 +418,16 @@ export default function RaceDetailPage() {
         {/* Win Percentage + Smart Racecard — side by side */}
         {analysis && racecard.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-[30%_calc(70%-1.5rem)] gap-4 sm:gap-6">
-            <WinPercentage racecard={top4} editHref={editHref} />
+            <div className="flex flex-col gap-4 sm:gap-6">
+              <WinPercentage racecard={top4} editHref={editHref} />
+              {/* Desktop only: fills the gap left beside the taller racecard.
+                  Below lg this card stays in AnalyticsPanel, so mobile is unchanged. */}
+              <AiWinProbabilityCard
+                winPct={winPct}
+                donutSegments={donutSegments}
+                className="hidden lg:block"
+              />
+            </div>
             <div className="hidden lg:block">
               <SmartRacecard racecard={racecard} />
             </div>
@@ -405,6 +442,7 @@ export default function RaceDetailPage() {
             winPct={winPct}
             donutSegments={donutSegments}
             marketPoints={marketPoints}
+            aiCardHoistedOnDesktop={racecard.length > 0}
           />
         )}
       </main>

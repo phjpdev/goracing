@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MatchCard, OddsTable } from "@/components/features/matches";
 import { LoginRequiredModal } from "@/components/ui/LoginRequiredModal";
 import { readMeetingsClientCache, writeMeetingsClientCache } from "@/lib/meetings/clientCache";
+import { canViewPastRaces, isPastRace } from "@/lib/races/access";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import type { HKJCMeeting, HKJCRace } from "@/types/race-meeting";
@@ -28,6 +29,8 @@ export default function MatchesPage() {
   const { auth, authLoading } = useAuth();
   const isLoggedIn = auth?.authenticated === true;
   const isManager = auth?.role === "admin" || auth?.role === "subadmin";
+  // Past-race results are admin-only, so this is stricter than isManager.
+  const canSeePastRaces = canViewPastRaces(auth?.role);
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState<(typeof VENUE_CODES)[number]>("ST");
   const [meeting, setMeeting] = useState<HKJCMeeting | null>(null);
@@ -160,6 +163,8 @@ export default function MatchesPage() {
             <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto overflow-x-visible px-0.5 lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => {
                 const shouldBlockLockedRace = race.isLocked && !isManager;
+                // While auth is still loading we fail closed and keep the button disabled.
+                const shouldBlockPastRace = !canSeePastRaces && isPastRace(race);
 
                 const handleViewDetails = () => {
                   if (!isLoggedIn) {
@@ -192,6 +197,7 @@ export default function MatchesPage() {
                           ? handleViewDetails
                           : undefined
                     }
+                    detailsDisabled={shouldBlockPastRace}
                     meetingDate={meeting.date}
                     venueCode={meeting.venueCode}
                   />

@@ -81,6 +81,7 @@ export const zhTW = {
     races: "場賽事",
     noMeeting: "此日期及場地沒有賽事。",
     loadingRaces: "載入賽事中…",
+    pastRaceAdminOnly: "賽事已結束，只有管理員可查看結果",
   },
 
   // Race analysis page
@@ -113,6 +114,7 @@ export const zhTW = {
     missingContext: "缺少賽事資料，請返回賽事列表。",
     raceNotFound: "找不到賽事",
     failedToLoad: "載入賽事資料失敗。",
+    pastRaceAdminOnly: "賽事已結束，只有管理員可查看結果",
     failedAi: "無法連接AI分析服務。",
   },
 
@@ -272,6 +274,7 @@ export const zhTW = {
     cancel: "取消",
     delete: "刪除",
     readMore: "閱讀更多",
+    viewMedia: "查看圖片",
   },
 };
 
