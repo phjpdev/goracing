@@ -16,20 +16,16 @@ function todayHK() {
 }
 
 function applyMeeting(
-  m: HKJCMeeting,
-  isManager: boolean
+  m: HKJCMeeting
 ): { venue: (typeof VENUE_CODES)[number]; meeting: HKJCMeeting; selectedRace: HKJCRace | null } {
   const code = (m.venueCode as (typeof VENUE_CODES)[number]) ?? "ST";
-  const firstAllowed = (m.races ?? []).find((r) => !(r.isLocked && !isManager)) ?? null;
-  return { venue: code, meeting: m, selectedRace: firstAllowed };
+  return { venue: code, meeting: m, selectedRace: (m.races ?? [])[0] ?? null };
 }
 
 export default function MatchesPage() {
   const { t, locale } = useLanguage();
   const { auth, authLoading } = useAuth();
   const isLoggedIn = auth?.authenticated === true;
-  const isManager = auth?.role === "admin" || auth?.role === "subadmin";
-  // Past-race results are admin-only, so this is stricter than isManager.
   const canSeePastRaces = canViewPastRaces(auth?.role);
   const [date, setDate] = useState(todayHK());
   const [venue, setVenue] = useState<(typeof VENUE_CODES)[number]>("ST");
@@ -38,13 +34,12 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [upgradeMessage, setUpgradeMessage] = useState("");
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const cached = readMeetingsClientCache();
     if (cached && (cached.races?.length ?? 0) > 0) {
-      const applied = applyMeeting(cached, isManager);
+      const applied = applyMeeting(cached);
       setVenue(applied.venue);
       setMeeting(applied.meeting);
       setSelectedRace(applied.selectedRace);
@@ -57,7 +52,6 @@ export default function MatchesPage() {
     }
 
     setError("");
-    setUpgradeMessage("");
 
     const controller = new AbortController();
 
@@ -78,7 +72,7 @@ export default function MatchesPage() {
         }
 
         writeMeetingsClientCache(m);
-        const applied = applyMeeting(m, isManager);
+        const applied = applyMeeting(m);
         setVenue(applied.venue);
         setMeeting(applied.meeting);
         setSelectedRace(applied.selectedRace);
@@ -94,7 +88,7 @@ export default function MatchesPage() {
             const full = fullMeetings?.[0];
             if (!full) return;
             writeMeetingsClientCache(full);
-            const next = applyMeeting(full, isManager);
+            const next = applyMeeting(full);
             setMeeting(next.meeting);
             setSelectedRace((prev) => {
               if (!prev) return next.selectedRace;
@@ -112,7 +106,7 @@ export default function MatchesPage() {
       });
 
     return () => controller.abort();
-  }, [date, isManager, authLoading]);
+  }, [date, authLoading]);
 
   return (
     <div className="h-full min-h-0 overflow-hidden bg-[#0d0d0d] text-white flex flex-col">
@@ -142,11 +136,6 @@ export default function MatchesPage() {
       </div>
 
       <div className="flex-1 min-h-0 mx-auto w-full max-w-[1600px] px-3 pb-2 sm:px-6 sm:pb-4 lg:px-8">
-        {upgradeMessage && (
-          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-amber-200 text-sm mb-3">
-            {upgradeMessage}
-          </div>
-        )}
         {loading && !meeting && (
           <div className="flex items-center gap-2 text-white/50 text-sm py-4">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
@@ -162,19 +151,8 @@ export default function MatchesPage() {
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
             <div className="w-full lg:w-[280px] lg:min-w-[280px] flex flex-col gap-3 overflow-y-auto overflow-x-visible px-0.5 lg:pb-4 lg:pr-1 scrollbar-green">
               {meeting.races.map((race, i) => {
-                const shouldBlockLockedRace = race.isLocked && !isManager;
                 // While auth is still loading we fail closed and keep the button disabled.
                 const shouldBlockPastRace = !canSeePastRaces && isPastRace(race);
-
-                const handleViewDetails = () => {
-                  if (!isLoggedIn) {
-                    setLoginModalOpen(true);
-                    return;
-                  }
-                  if (shouldBlockLockedRace) {
-                    setUpgradeMessage("請升級VVIP");
-                  }
-                };
 
                 return (
                   <MatchCard
@@ -182,21 +160,8 @@ export default function MatchesPage() {
                     race={race}
                     index={i + 1}
                     isSelected={selectedRace?.id === race.id}
-                    onClick={() => {
-                      if (race.isLocked && !isManager) {
-                        setUpgradeMessage("請升級VVIP");
-                        return;
-                      }
-                      setUpgradeMessage("");
-                      setSelectedRace(race);
-                    }}
-                    onViewDetails={
-                      !isLoggedIn
-                        ? handleViewDetails
-                        : shouldBlockLockedRace
-                          ? handleViewDetails
-                          : undefined
-                    }
+                    onClick={() => setSelectedRace(race)}
+                    onViewDetails={!isLoggedIn ? () => setLoginModalOpen(true) : undefined}
                     detailsDisabled={shouldBlockPastRace}
                     meetingDate={meeting.date}
                     venueCode={meeting.venueCode}

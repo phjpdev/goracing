@@ -16,8 +16,8 @@ export function isPastRace(race: Pick<HKJCRace, "status" | "postTime">, now: num
 
 /**
  * Results of past races are admin-only. Members — VIP included — and subadmins
- * are blocked, so this is deliberately stricter than the isManager check used
- * for VVIP-locked races.
+ * are blocked, so this is deliberately stricter than the VIP check that gates
+ * analysis for upcoming races.
  */
 export function canViewPastRaces(role: string | undefined): boolean {
   return role === "admin";

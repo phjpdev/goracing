@@ -3,7 +3,6 @@ import redis from "@/lib/redis";
 const CACHE_TTL = 120;
 const STALE_TTL = 60 * 30;
 const ACTIVE_DATE_TTL = 60 * 60;
-const LOCKED_TTL = 60 * 60 * 24 * 7;
 const HKJC_TIMEOUT_MS = 8000;
 const LOCAL_VENUES = new Set(["ST", "HV"]);
 const VENUE_CODES = ["ST", "HV"] as const;
@@ -230,16 +229,6 @@ function filterByVenue(meetings: any[], venue: string) {
     const vc = m?.venueCode;
     return typeof vc === "string" && LOCAL_VENUES.has(vc) && vc === venue;
   });
-}
-
-function pickTwoRandomIds(ids: string[]) {
-  if (ids.length <= 2) return ids.slice();
-  const copy = ids.slice();
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy.slice(0, 2);
 }
 
 function writeMemCache(cacheKey: string, meetings: any[]) {
@@ -543,43 +532,6 @@ async function resolveAutoMeetings(
   });
 }
 
-async function attachLocks(meetings: any[], date: string, venue: string, isManager: boolean) {
-  const effectiveDate = meetings?.[0]?.date ?? date;
-  const effectiveVenue = meetings?.[0]?.venueCode ?? venue;
-  const lockKey = `locked_races:${effectiveDate}:${effectiveVenue}`;
-
-  let lockedRaceIds: string[] = [];
-  try {
-    const raw = await redis.get(lockKey);
-    if (raw) lockedRaceIds = JSON.parse(raw);
-  } catch {
-    // Redis unavailable
-  }
-
-  if (!lockedRaceIds || lockedRaceIds.length === 0) {
-    const raceIds: string[] = (meetings?.[0]?.races ?? []).map((r: any) => r.id).filter(Boolean);
-    lockedRaceIds = pickTwoRandomIds(raceIds);
-    try {
-      if (lockedRaceIds.length > 0) {
-        await redis.set(lockKey, JSON.stringify(lockedRaceIds), "EX", LOCKED_TTL);
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return (meetings ?? []).map((m: any) => {
-    const races = (m.races ?? []).map((r: any) => {
-      const isLocked = lockedRaceIds.includes(r.id);
-      if (isLocked && !isManager) {
-        return { ...r, isLocked: true, runners: [] };
-      }
-      return { ...r, isLocked };
-    });
-    return { ...m, lockedRaceIds, races };
-  });
-}
-
 function stripRunnersForList(meetings: any[]) {
   return meetings.map((m) => ({
     ...m,
@@ -598,10 +550,9 @@ export type MeetingsResult = {
 export async function getMeetingsResult(options: {
   date: string;
   venue: string;
-  isManager: boolean;
   list?: boolean;
 }): Promise<MeetingsResult> {
-  const { date, venue, isManager, list } = options;
+  const { date, venue, list } = options;
 
   let picked: { venue: string; meetings: any[]; revalidate: boolean };
 
@@ -612,8 +563,7 @@ export async function getMeetingsResult(options: {
     picked = { venue, ...result };
   }
 
-  const withLocks = await attachLocks(picked.meetings, date, picked.venue, isManager);
-  const body = list ? stripRunnersForList(withLocks) : withLocks;
+  const body = list ? stripRunnersForList(picked.meetings) : picked.meetings;
   const cacheStatus =
     picked.revalidate ? "stale" : picked.meetings.length > 0 ? "hit" : "miss";
 

@@ -152,7 +152,6 @@ export default function RaceDetailPage() {
   useEffect(() => {
     if (!hkjcRace) return;
     if (authLoading) return;
-    if (hkjcRace.isLocked && !isManager) return;
     if (!canSeePastRaces && isPastRace(hkjcRace)) return;
     if (!isManager && !isVip) return;
     setAnalyzing(true);
@@ -250,29 +249,6 @@ export default function RaceDetailPage() {
         </Link>
       </div>
     );
-  }
-
-  if (hkjcRace.isLocked) {
-    if (authLoading) {
-      return (
-        <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
-          <div className="flex items-center gap-3 text-white/60">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
-            Loading…
-          </div>
-        </div>
-      );
-    }
-    if (!isManager) {
-      return (
-        <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
-          <p className="text-amber-200 text-base sm:text-lg font-inter">請升級VVIP</p>
-          <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
-            {t.races.back}
-          </Link>
-        </div>
-      );
-    }
   }
 
   if (isPastRace(hkjcRace)) {

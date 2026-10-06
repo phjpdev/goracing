@@ -43,7 +43,6 @@ export type HKJCRace = {
   raceClass_en: string;
   raceClass_ch?: string;
   runners: HKJCRunner[];
-  isLocked?: boolean;
 };
 
 export type HKJCMeeting = {
@@ -55,5 +54,4 @@ export type HKJCMeeting = {
   currentNumberOfRace: number;
   meetingType: string;
   races: HKJCRace[];
-  lockedRaceIds?: string[];
 };
