@@ -116,6 +116,7 @@ export const zhTW = {
     raceNotFound: "找不到賽事",
     failedToLoad: "載入賽事資料失敗。",
     pastRaceAdminOnly: "賽事已結束，只有管理員可查看結果",
+    archivedNotice: "此賽事已結束，只顯示已保存的 AI 分析。賠率及賽馬資料不會保留。",
     failedAi: "無法連接AI分析服務。",
   },
 

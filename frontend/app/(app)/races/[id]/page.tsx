@@ -35,6 +35,21 @@ type GeminiAnalysis = {
   riskLevel: string;
 };
 
+/** A saved analysis row, used when HKJC can no longer serve the meeting. */
+type StoredAnalysis = {
+  race_id: string;
+  race_date: string;
+  venue_code: string;
+  race_name_en: string | null;
+  race_name_ch: string | null;
+  analysis_json: GeminiAnalysis;
+};
+
+const VENUE_LABELS: Record<string, { en: string; zh: string }> = {
+  ST: { en: "Sha Tin", zh: "沙田" },
+  HV: { en: "Happy Valley", zh: "跑馬地" },
+};
+
 function formatTime(iso: string) {
   if (!iso) return "-";
   return new Date(iso).toLocaleTimeString("en-HK", {
@@ -71,10 +86,10 @@ function mapToRace(hkjcRace: HKJCRace, locale: "zh-TW" | "en"): Race {
   };
 }
 
-function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" | "en"): RacecardRow[] {
+function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace | null, locale: "zh-TW" | "en"): RacecardRow[] {
   const isZh = locale === "zh-TW";
   return picks.map((pick, idx) => {
-    const runner = hkjcRace.runners?.find((r) => r.no === pick.no);
+    const runner = hkjcRace?.runners?.find((r) => r.no === pick.no);
     return {
       rank: idx + 1,
       horseNo: runner?.no ?? pick.no,
@@ -83,7 +98,7 @@ function mapToRacecard(picks: GeminiPick[], hkjcRace: HKJCRace, locale: "zh-TW" 
       sire: pick.analysis,
       jockey: (isZh ? runner?.jockey?.name_ch || runner?.jockey?.name_en : runner?.jockey?.name_en || runner?.jockey?.name_ch) ?? "-",
       trainer: (isZh ? runner?.trainer?.name_ch || runner?.trainer?.name_en : runner?.trainer?.name_en || runner?.trainer?.name_ch) ?? "-",
-      turf: (isZh ? hkjcRace.raceCourse?.description_ch || hkjcRace.raceCourse?.description_en : hkjcRace.raceCourse?.description_en || hkjcRace.raceCourse?.description_ch) ?? "-",
+      turf: (isZh ? hkjcRace?.raceCourse?.description_ch || hkjcRace?.raceCourse?.description_en : hkjcRace?.raceCourse?.description_en || hkjcRace?.raceCourse?.description_ch) ?? "-",
       speed: pick.speed,
       class: pick.class,
       winPct: pick.winPct,
@@ -107,6 +122,7 @@ export default function RaceDetailPage() {
   const venue = searchParams.get("venue") ?? "";
 
   const [hkjcRace, setHkjcRace] = useState<HKJCRace | null>(null);
+  const [archived, setArchived] = useState<StoredAnalysis | null>(null);
   const [analysis, setAnalysis] = useState<GeminiAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
@@ -121,6 +137,24 @@ export default function RaceDetailPage() {
       setLoading(false);
       return;
     }
+
+    const loadArchived = async (fallbackError: string) => {
+      try {
+        const res = await fetch(`/api/analyses/${raceId}`);
+        if (res.ok) {
+          const stored = (await res.json()) as StoredAnalysis;
+          if (stored?.analysis_json?.topPicks?.length) {
+            setArchived(stored);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // fall through to the original error
+      }
+      setError(fallbackError);
+      setLoading(false);
+    };
 
     fetch(`/api/races/meetings?date=${date}&venue=${venue}`)
       .then(async (r) => {
@@ -137,12 +171,10 @@ export default function RaceDetailPage() {
             return;
           }
         }
-        setError("notfound");
-        setLoading(false);
+        void loadArchived("notfound");
       })
       .catch(() => {
-        setError("failed");
-        setLoading(false);
+        void loadArchived("failed");
       });
   }, [raceId, date, venue]);
 
@@ -234,6 +266,117 @@ export default function RaceDetailPage() {
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
           {t.races.loadingRaceData}
         </div>
+      </div>
+    );
+  }
+
+  // Past meeting: HKJC only serves the current meeting, so fall back to the
+  // saved analysis. Odds and card data were never persisted and are gone.
+  if (archived) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
+          <div className="flex items-center gap-3 text-white/60">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+            {t.races.loadingRaceData}
+          </div>
+        </div>
+      );
+    }
+    if (!canSeePastRaces) {
+      return (
+        <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-amber-200 text-base sm:text-lg font-inter text-center">
+            {t.races.pastRaceAdminOnly}
+          </p>
+          <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
+            {t.races.back}
+          </Link>
+        </div>
+      );
+    }
+
+    const isZh = locale === "zh-TW";
+    const venueLabel = VENUE_LABELS[archived.venue_code];
+    const venueName = venueLabel ? (isZh ? venueLabel.zh : venueLabel.en) : archived.venue_code;
+    const archivedName =
+      (isZh
+        ? archived.race_name_ch || archived.race_name_en
+        : archived.race_name_en || archived.race_name_ch) || archived.race_id;
+    const picks = archived.analysis_json?.topPicks ?? [];
+    const archivedCard = mapToRacecard(picks, null, locale);
+    const archivedTop4 = archivedCard.slice(0, 4);
+    const archivedWinPct = archived.analysis_json?.overallWinPct ?? 0;
+    const archivedDonut = picks.slice(1, 5).map((p) => parseFloat(p.winPct) || 0);
+    const archivedTopPick = picks[0];
+    const archivedPedigree = archivedTopPick
+      ? [
+          archivedTopPick.surface,
+          archivedTopPick.speed,
+          archivedTopPick.class,
+          archivedTopPick.distance,
+          archivedTopPick.form,
+        ]
+      : [0, 0, 0, 0, 0];
+    const archivedRadarLabels = isZh
+      ? ["場地", "速度", "級別", "途程", "近況"]
+      : ["Surface", "Speed", "Class", "Distance", "Form"];
+
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] text-white">
+        <main className="mx-auto w-full max-w-[1600px] space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+          <section className="flex items-center gap-3">
+            <Link
+              href={ROUTES.LAST_MATCHES}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 font-inter text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white"
+              aria-label={t.races.back}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <div className="min-w-0 flex-1">
+              <p className="font-inter text-sm text-white/60 leading-tight flex flex-wrap items-center gap-x-2">
+                <span>{venueName}</span>
+                <span className="text-white/40">•</span>
+                <span>{archived.race_date}</span>
+                <span className="text-white/40">•</span>
+                <span className="text-white/40">{t.races.finished}</span>
+              </p>
+              <h1 className="font-inter text-2xl font-bold text-white mt-0.5 leading-tight sm:text-[30px]">
+                {archivedName}
+              </h1>
+            </div>
+          </section>
+
+          <div className="rounded-xl border border-white/10 bg-[#141414] px-4 py-3 font-inter text-sm text-white/60">
+            {t.races.archivedNotice}
+          </div>
+
+          {archivedCard.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-[30%_calc(70%-1.5rem)] gap-4 sm:gap-6">
+              <div className="flex flex-col gap-4 sm:gap-6">
+                <WinPercentage racecard={archivedTop4} />
+                <AiWinProbabilityCard
+                  winPct={archivedWinPct}
+                  donutSegments={archivedDonut}
+                  className="hidden lg:block"
+                />
+              </div>
+              <div className="hidden lg:block">
+                <SmartRacecard racecard={archivedCard} />
+              </div>
+            </div>
+          )}
+
+          <AnalyticsPanel
+            pedigreeValues={archivedPedigree}
+            radarLabels={archivedRadarLabels}
+            winPct={archivedWinPct}
+            donutSegments={archivedDonut}
+            aiCardHoistedOnDesktop={archivedCard.length > 0}
+          />
+        </main>
       </div>
     );
   }

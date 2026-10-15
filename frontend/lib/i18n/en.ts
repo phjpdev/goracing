@@ -118,6 +118,7 @@ export const en: TranslationKeys = {
     raceNotFound: "Race not found",
     failedToLoad: "Failed to load race data.",
     pastRaceAdminOnly: "Race finished — results are admin only",
+    archivedNotice: "This meeting has finished — showing the saved AI analysis only. Odds and race card data are not retained.",
     failedAi: "Failed to connect to AI service.",
   },
 
