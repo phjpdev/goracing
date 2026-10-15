@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { ROUTES } from "@/lib/constants";
+import { canViewPastRaces } from "@/lib/races/access";
+
+const PAGE_SIZE = 3;
 
 type TopPick = {
   no: string;
@@ -48,21 +52,71 @@ const RISK_STYLES: Record<string, string> = {
 const RANK_COLORS = ["#F7A83B", "#28E88E", "#3B82F6", "#8B5CF6"];
 
 export default function LastMatchesPage() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
+  const { auth, authLoading } = useAuth();
+  const isAdmin = canViewPastRaces(auth?.role);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState("");
 
+  const loadPage = useCallback(async (offset: number) => {
+    const res = await fetch(`/api/analyses/recent?limit=${PAGE_SIZE}&offset=${offset}`);
+    if (!res.ok) throw new Error("failed");
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("failed");
+    return data as Meeting[];
+  }, []);
+
   useEffect(() => {
-    fetch("/api/analyses/recent")
-      .then((r) => r.json())
+    if (authLoading) return;
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
+    loadPage(0)
       .then((data) => {
-        if (Array.isArray(data)) setMeetings(data);
-        else setError("Failed to load");
+        setMeetings(data);
+        setHasMore(data.length === PAGE_SIZE);
       })
       .catch(() => setError("Failed to load"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authLoading, isAdmin, loadPage]);
+
+  async function handleLoadMore() {
+    setLoadingMore(true);
+    try {
+      const next = await loadPage(meetings.length);
+      setMeetings((prev) => [...prev, ...next]);
+      setHasMore(next.length === PAGE_SIZE);
+    } catch {
+      setError("Failed to load");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center">
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4 px-6">
+        <p className="text-amber-200 text-base sm:text-lg font-inter text-center">
+          {t.races.pastRaceAdminOnly}
+        </p>
+        <Link href={ROUTES.MATCHES} className="text-[#28E88E] hover:underline">
+          {t.races.back}
+        </Link>
+      </div>
+    );
+  }
 
   function formatDate(dateStr: string) {
     const d = new Date(dateStr);
@@ -94,7 +148,7 @@ export default function LastMatchesPage() {
               {locale === "zh-TW" ? "最近賽事分析" : "Last Matches"}
             </h1>
             <p className="text-white/50 text-sm mt-0.5">
-              {locale === "zh-TW" ? "最近 3 場賽事的 AI 分析結果" : "AI analysis results from the last 3 meetings"}
+              {locale === "zh-TW" ? "已保存的賽事 AI 分析結果" : "Saved AI analysis results from past meetings"}
             </p>
           </div>
         </div>
@@ -217,6 +271,22 @@ export default function LastMatchesPage() {
             </section>
           );
         })}
+
+        {!loading && !error && hasMore && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loadingMore && (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+              )}
+              {locale === "zh-TW" ? "載入更多" : "Load more"}
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

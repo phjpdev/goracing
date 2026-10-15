@@ -85,6 +85,7 @@ export function Header({ variant = "default" }: { variant?: HeaderVariant }) {
                       {t.header.records}
                     </Link>
                   )}
+                  {auth?.role === "admin" && (
                   <Link
                     href="/last-matches"
                     className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/5 hover:text-white transition no-underline"
@@ -94,6 +95,7 @@ export function Header({ variant = "default" }: { variant?: HeaderVariant }) {
                     </svg>
                     {locale === "zh-TW" ? "最近賽事" : "Last Matches"}
                   </Link>
+                  )}
 
                   <Link
                     href={manageHref}

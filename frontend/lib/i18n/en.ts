@@ -84,6 +84,7 @@ export const en: TranslationKeys = {
     noMeeting: "No meeting found for this date and venue.",
     loadingRaces: "Loading races…",
     pastRaceAdminOnly: "Race finished — results are admin only",
+    pastMeetings: "Past Meetings",
   },
 
   // Race analysis page

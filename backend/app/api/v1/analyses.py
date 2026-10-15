@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,14 +35,23 @@ class RecentMeeting(BaseModel):
 
 # Must be declared BEFORE /{race_id} so FastAPI doesn't match "recent" as a race_id
 @router.get("/recent", response_model=list[RecentMeeting])
-async def get_recent_analyses(db: AsyncSession = Depends(get_db)):
-    """Return the last 3 race meetings (by race_date + venue_code) that have saved analyses."""
-    # Step 1: find the 3 most recent distinct (race_date, venue_code) pairs
+async def get_recent_analyses(
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(3, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+):
+    """Return saved race meetings (by race_date + venue_code), newest first.
+
+    Defaults to the 3 most recent so existing callers are unaffected; the admin
+    past-meetings view pages back through history with limit/offset.
+    """
+    # Step 1: find the requested page of distinct (race_date, venue_code) pairs
     stmt = (
         select(RaceAnalysis.race_date, RaceAnalysis.venue_code)
         .group_by(RaceAnalysis.race_date, RaceAnalysis.venue_code)
         .order_by(RaceAnalysis.race_date.desc())
-        .limit(3)
+        .limit(limit)
+        .offset(offset)
     )
     result = await db.execute(stmt)
     meetings = result.all()

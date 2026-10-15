@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { MatchCard, OddsTable } from "@/components/features/matches";
 import { LoginRequiredModal } from "@/components/ui/LoginRequiredModal";
 import { readMeetingsClientCache, writeMeetingsClientCache } from "@/lib/meetings/clientCache";
+import { ROUTES } from "@/lib/constants";
 import { canViewPastRaces, isPastRace } from "@/lib/races/access";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -131,6 +133,18 @@ export default function MatchesPage() {
           )}
           {refreshing && (
             <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-[#28E88E]" />
+          )}
+          {/* Past meetings are admin-only, same rule as past-race results. */}
+          {canSeePastRaces && (
+            <Link
+              href={ROUTES.LAST_MATCHES}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1 text-xs font-medium text-white/80 no-underline transition hover:bg-white/5 hover:text-white"
+            >
+              <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {t.matches.pastMeetings}
+            </Link>
           )}
         </div>
       </div>

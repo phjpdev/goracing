@@ -82,6 +82,7 @@ export const zhTW = {
     noMeeting: "此日期及場地沒有賽事。",
     loadingRaces: "載入賽事中…",
     pastRaceAdminOnly: "賽事已結束，只有管理員可查看結果",
+    pastMeetings: "過往賽事",
   },
 
   // Race analysis page
