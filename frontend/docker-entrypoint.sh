@@ -9,6 +9,9 @@ REDIS_URL=${REDIS_URL}
 EOF
 
 # Warm HKJC meetings cache in background (every 60s)
+if [ "${DISABLE_MEETINGS_WARMER}" = "1" ]; then
+  echo "[meetings-warmer] disabled via DISABLE_MEETINGS_WARMER=1"
+else
 (
   sleep 15
   while true; do
@@ -16,5 +19,6 @@ EOF
     sleep 60
   done
 ) &
+fi
 
 exec node server.js
