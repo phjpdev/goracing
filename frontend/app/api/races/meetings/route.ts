@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
         "Cache-Control": cacheStatus === "hit" ? "private, max-age=30" : "private, no-cache",
       },
     });
-  } catch {
+  } catch (e) {
+    console.error(`[meetings] ${date}/${venueParam} failed:`, e instanceof Error ? e.message : e);
     return NextResponse.json({ error: "Failed to fetch race meetings" }, { status: 502 });
   }
 }

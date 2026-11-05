@@ -1,4 +1,5 @@
 import redis from "@/lib/redis";
+import { HKJC_RACE_MEETINGS_QUERY } from "./hkjcQuery";
 
 const CACHE_TTL = 120;
 const STALE_TTL = 60 * 30;
@@ -7,7 +8,9 @@ const HKJC_TIMEOUT_MS = 8000;
 const LOCAL_VENUES = new Set(["ST", "HV"]);
 const VENUE_CODES = ["ST", "HV"] as const;
 
-const HKJC_URL = "https://info.cld.hkjc.com/graphql/base/";
+// Same endpoint + GET format bet.hkjc.com itself uses (GlobalConfig GRAPHQL_URL,
+// QUERY_USE_GET_METHOD). The query must be on HKJC's whitelist — see hkjcQuery.ts.
+const HKJC_URL = "https://info.cld.hkjc.com/graphql/base-get/";
 
 type MeetingsCacheEntry = {
   value: any[];
@@ -32,193 +35,6 @@ if (process.env.NODE_ENV !== "production") {
   globalForMeetings.__meetingsInflight = meetingsInflight;
   globalForMeetings.__activeDateMem = activeDateMem;
 }
-
-const QUERY = `
-fragment raceFragment on Race {
-  id
-  no
-  status
-  raceName_en
-  raceName_ch
-  postTime
-  country_en
-  country_ch
-  distance
-  wageringFieldSize
-  go_en
-  go_ch
-  ratingType
-  raceTrack {
-    description_en
-    description_ch
-  }
-  raceCourse {
-    description_en
-    description_ch
-    displayCode
-  }
-  claCode
-  raceClass_en
-  raceClass_ch
-  judgeSigns {
-    value_en
-  }
-}
-
-fragment racingBlockFragment on RaceMeeting {
-  jpEsts: pmPools(
-    oddsTypes: [WIN, PLA, TCE, TRI, FF, QTT, DT, TT, SixUP]
-    filters: ["jackpot", "estimatedDividend"]
-  ) {
-    leg {
-      number
-      races
-    }
-    oddsType
-    jackpot
-    estimatedDividend
-    mergedPoolId
-  }
-  poolInvs: pmPools(
-    oddsTypes: [WIN, PLA, QIN, QPL, CWA, CWB, CWC, IWN, FCT, TCE, TRI, FF, QTT, DBL, TBL, DT, TT, SixUP]
-  ) {
-    id
-    leg {
-      races
-    }
-  }
-  penetrometerReadings(filters: ["first"]) {
-    reading
-    readingTime
-  }
-  hammerReadings(filters: ["first"]) {
-    reading
-    readingTime
-  }
-  changeHistories(filters: ["top3"]) {
-    type
-    time
-    raceNo
-    runnerNo
-    horseName_ch
-    horseName_en
-    jockeyName_ch
-    jockeyName_en
-    scratchHorseName_ch
-    scratchHorseName_en
-    handicapWeight
-    scrResvIndicator
-  }
-}
-
-query raceMeetings($date: String, $venueCode: String) {
-  timeOffset {
-    rc
-  }
-  activeMeetings: raceMeetings {
-    id
-    venueCode
-    date
-    status
-    races {
-      no
-      postTime
-      status
-      wageringFieldSize
-    }
-  }
-  raceMeetings(date: $date, venueCode: $venueCode) {
-    id
-    status
-    venueCode
-    date
-    totalNumberOfRace
-    currentNumberOfRace
-    dateOfWeek
-    meetingType
-    totalInvestment
-    country {
-      code
-      namech
-      nameen
-      seq
-    }
-    races {
-      ...raceFragment
-      runners {
-        id
-        no
-        standbyNo
-        status
-        name_ch
-        name_en
-        horse {
-          id
-          code
-        }
-        color
-        barrierDrawNumber
-        handicapWeight
-        currentWeight
-        currentRating
-        internationalRating
-        gearInfo
-        racingColorFileName
-        allowance
-        trainerPreference
-        last6run
-        saddleClothNo
-        trumpCard
-        priority
-        finalPosition
-        deadHeat
-        winOdds
-        jockey {
-          code
-          name_en
-          name_ch
-        }
-        trainer {
-          code
-          name_en
-          name_ch
-        }
-      }
-    }
-    obSt: pmPools(oddsTypes: [WIN, PLA]) {
-      leg {
-        races
-      }
-      oddsType
-      comingleStatus
-    }
-    poolInvs: pmPools(
-      oddsTypes: [WIN, PLA, QIN, QPL, CWA, CWB, CWC, IWN, FCT, TCE, TRI, FF, QTT, DBL, TBL, DT, TT, SixUP]
-    ) {
-      id
-      leg {
-        number
-        races
-      }
-      status
-      sellStatus
-      oddsType
-      investment
-      mergedPoolId
-      lastUpdateTime
-    }
-    ...racingBlockFragment
-    pmPools(oddsTypes: []) {
-      id
-    }
-    jkcInstNo: foPools(oddsTypes: [JKC], filters: ["top"]) {
-      instNo
-    }
-    tncInstNo: foPools(oddsTypes: [TNC], filters: ["top"]) {
-      instNo
-    }
-  }
-}`;
 
 export function todayHK() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Hong_Kong" });
@@ -298,20 +114,19 @@ async function fetchHKJC(variables: Record<string, string>) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), HKJC_TIMEOUT_MS);
   try {
-    const res = await fetch(HKJC_URL, {
-      method: "POST",
+    const url = new URL(HKJC_URL);
+    url.searchParams.append("query", HKJC_RACE_MEETINGS_QUERY);
+    url.searchParams.append("variables", JSON.stringify(variables));
+
+    const res = await fetch(url, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Origin: "https://racing.hkjc.com",
-        Referer: "https://racing.hkjc.com/",
+        Origin: "https://bet.hkjc.com",
+        Referer: "https://bet.hkjc.com/",
         "User-Agent": "Mozilla/5.0",
       },
-      body: JSON.stringify({
-        operationName: "raceMeetings",
-        query: QUERY,
-        variables,
-      }),
       cache: "no-store",
       signal: controller.signal,
     });
@@ -327,6 +142,18 @@ async function fetchHKJC(variables: Record<string, string>) {
     if (!res.ok) {
       const msg = json?.error ?? json?.message ?? `HKJC status ${res.status}`;
       throw new Error(msg);
+    }
+
+    // HKJC reports rejections (e.g. "Internal server error - WHITELIST_ERROR")
+    // as HTTP 200 with `errors` and `raceMeetings: null`. Treating that as
+    // "no meetings" hides the outage behind the "no races today" message, so
+    // fail loudly instead and let callers fall back to cache / show an error.
+    if (Array.isArray(json?.errors) && json.errors.length > 0 && json?.data?.raceMeetings == null) {
+      const msg = json.errors
+        .map((e: { message?: string }) => e?.message)
+        .filter(Boolean)
+        .join("; ");
+      throw new Error(`HKJC GraphQL error: ${msg || "unknown error"}`);
     }
     return json;
   } finally {
@@ -572,5 +399,12 @@ export async function getMeetingsResult(options: {
 
 export async function warmAllVenueMeetings() {
   const date = todayHK();
-  await Promise.all(VENUE_CODES.map((venue) => fetchMeetingsFromHKJC(date, venue).catch(() => [])));
+  await Promise.all(
+    VENUE_CODES.map((venue) =>
+      fetchMeetingsFromHKJC(date, venue).catch((e) => {
+        console.error(`[meetings-warmer] ${date}/${venue} failed:`, e instanceof Error ? e.message : e);
+        return [];
+      })
+    )
+  );
 }

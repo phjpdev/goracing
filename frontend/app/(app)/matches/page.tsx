@@ -101,7 +101,7 @@ export default function MatchesPage() {
       })
       .catch((e) => {
         if (e?.name !== "AbortError") {
-          if (!cached) setError("Failed to load race data.");
+          if (!cached) setError("failed");
           setLoading(false);
           setRefreshing(false);
         }
@@ -156,7 +156,7 @@ export default function MatchesPage() {
             {t.matches.loadingRaces}
           </div>
         )}
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-400 text-sm">{t.races.failedToLoad}</p>}
         {!loading && !error && !meeting && (
           <p className="text-white/40 text-sm py-4">{t.matches.noMeeting}</p>
         )}

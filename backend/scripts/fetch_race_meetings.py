@@ -18,195 +18,16 @@ except ImportError:
     print("Install requests: pip install requests", file=sys.stderr)
     sys.exit(1)
 
-GRAPHQL_URL = "https://info.cld.hkjc.com/graphql/base/"
+GRAPHQL_URL = "https://info.cld.hkjc.com/graphql/base-get/"
 
-RACE_MEETINGS_QUERY = """
-fragment raceFragment on Race {
-  id
-  no
-  status
-  raceName_en
-  raceName_ch
-  postTime
-  country_en
-  country_ch
-  distance
-  wageringFieldSize
-  go_en
-  go_ch
-  ratingType
-  raceTrack {
-    description_en
-    description_ch
-  }
-  raceCourse {
-    description_en
-    description_ch
-    displayCode
-  }
-  claCode
-  raceClass_en
-  raceClass_ch
-  judgeSigns {
-    value_en
-  }
-}
-
-fragment racingBlockFragment on RaceMeeting {
-  jpEsts: pmPools(
-    oddsTypes: [WIN, PLA, TCE, TRI, FF, QTT, DT, TT, SixUP]
-    filters: ["jackpot", "estimatedDividend"]
-  ) {
-    leg {
-      number
-      races
-    }
-    oddsType
-    jackpot
-    estimatedDividend
-    mergedPoolId
-  }
-  poolInvs: pmPools(
-    oddsTypes: [WIN, PLA, QIN, QPL, CWA, CWB, CWC, IWN, FCT, TCE, TRI, FF, QTT, DBL, TBL, DT, TT, SixUP]
-  ) {
-    id
-    leg {
-      races
-    }
-  }
-  penetrometerReadings(filters: ["first"]) {
-    reading
-    readingTime
-  }
-  hammerReadings(filters: ["first"]) {
-    reading
-    readingTime
-  }
-  changeHistories(filters: ["top3"]) {
-    type
-    time
-    raceNo
-    runnerNo
-    horseName_ch
-    horseName_en
-    jockeyName_ch
-    jockeyName_en
-    scratchHorseName_ch
-    scratchHorseName_en
-    handicapWeight
-    scrResvIndicator
-  }
-}
-
-query raceMeetings($date: String, $venueCode: String) {
-  timeOffset {
-    rc
-  }
-  activeMeetings: raceMeetings {
-    id
-    venueCode
-    date
-    status
-    races {
-      no
-      postTime
-      status
-      wageringFieldSize
-    }
-  }
-  raceMeetings(date: $date, venueCode: $venueCode) {
-    id
-    status
-    venueCode
-    date
-    totalNumberOfRace
-    currentNumberOfRace
-    dateOfWeek
-    meetingType
-    totalInvestment
-    country {
-      code
-      namech
-      nameen
-      seq
-    }
-    races {
-      ...raceFragment
-      runners {
-        id
-        no
-        standbyNo
-        status
-        name_ch
-        name_en
-        horse {
-          id
-          code
-        }
-        color
-        barrierDrawNumber
-        handicapWeight
-        currentWeight
-        currentRating
-        internationalRating
-        gearInfo
-        racingColorFileName
-        allowance
-        trainerPreference
-        last6run
-        saddleClothNo
-        trumpCard
-        priority
-        finalPosition
-        deadHeat
-        winOdds
-        jockey {
-          code
-          name_en
-          name_ch
-        }
-        trainer {
-          code
-          name_en
-          name_ch
-        }
-      }
-    }
-    obSt: pmPools(oddsTypes: [WIN, PLA]) {
-      leg {
-        races
-      }
-      oddsType
-      comingleStatus
-    }
-    poolInvs: pmPools(
-      oddsTypes: [WIN, PLA, QIN, QPL, CWA, CWB, CWC, IWN, FCT, TCE, TRI, FF, QTT, DBL, TBL, DT, TT, SixUP]
-    ) {
-      id
-      leg {
-        number
-        races
-      }
-      status
-      sellStatus
-      oddsType
-      investment
-      mergedPoolId
-      lastUpdateTime
-    }
-    ...racingBlockFragment
-    pmPools(oddsTypes: []) {
-      id
-    }
-    jkcInstNo: foPools(oddsTypes: [JKC], filters: ["top"]) {
-      instNo
-    }
-    tncInstNo: foPools(oddsTypes: [TNC], filters: ["top"]) {
-      instNo
-    }
-  }
-}
-"""
+# HKJC only answers whitelisted queries (the exact ones bet.hkjc.com sends);
+# anything else returns "Internal server error - WHITELIST_ERROR". Keep this
+# byte-identical to HKJC_RACE_MEETINGS_QUERY in frontend/lib/meetings/hkjcQuery.ts.
+RACE_MEETINGS_QUERY = (
+    'fragment raceFragment on Race{id no status raceName_en raceName_ch postTime country_en country_ch distance wageringFieldSize go_en go_ch ratingType raceTrack{description_en description_ch}raceCourse{description_en description_ch displayCode}claCode raceClass_en raceClass_ch judgeSigns{value_en}}'
+    'fragment racingBlockFragment on RaceMeeting{jpEsts:pmPools(oddsTypes:[WIN PLA TCE TRI FF QTT DT TT SixUP]filters:["jackpot" "estimatedDividend"]){leg{number races}oddsType jackpot estimatedDividend mergedPoolId}poolInvs:pmPools(oddsTypes:[WIN PLA QIN QPL CWA CWB CWC IWN FCT TCE TRI FF QTT DBL TBL DT TT SixUP]){id leg{races}}penetrometerReadings(filters:["first"]){reading readingTime}hammerReadings(filters:["first"]){reading readingTime}changeHistories(filters:["top3"]){type time raceNo runnerNo horseName_ch horseName_en jockeyName_ch jockeyName_en scratchHorseName_ch scratchHorseName_en handicapWeight scrResvIndicator}}'
+    'query raceMeetings($date:String$venueCode:String){timeOffset{rc}activeMeetings:raceMeetings{id venueCode date status races{no postTime status wageringFieldSize}poolInvs:pmPools(oddsTypes:[WIN PLA QIN QPL CWA CWB CWC IWN FCT TCE TRI FF QTT DBL TBL DT TT SixUP]){status}}raceMeetings(date:$date venueCode:$venueCode){id status venueCode date totalNumberOfRace currentNumberOfRace dateOfWeek meetingType totalInvestment country{code namech nameen seq}races{...raceFragment runners{id no standbyNo status name_ch name_en horse{id code}color barrierDrawNumber handicapWeight currentWeight currentRating internationalRating gearInfo racingColorFileName allowance trainerPreference last6run saddleClothNo trumpCard priority finalPosition deadHeat winOdds jockey{code name_en name_ch}trainer{code name_en name_ch}}}obSt:pmPools(oddsTypes:[WIN PLA]){leg{races}oddsType comingleStatus}poolInvs:pmPools(oddsTypes:[WIN PLA QIN QPL CWA CWB CWC IWN FCT TCE TRI FF QTT DBL TBL DT TT SixUP]){id leg{number races}status sellStatus oddsType investment mergedPoolId lastUpdateTime}...racingBlockFragment pmPools(oddsTypes:[]){id}jkcInstNo:foPools(oddsTypes:[JKC]filters:["top"]){instNo}tncInstNo:foPools(oddsTypes:[TNC]filters:["top"]){instNo}}}'
+)
 
 
 def fetch_race_meetings(date: str | None = None, venue_code: str | None = None) -> dict:
@@ -217,22 +38,26 @@ def fetch_race_meetings(date: str | None = None, venue_code: str | None = None) 
     if venue_code:
         variables["venueCode"] = venue_code
 
-    payload = {
-        "operationName": "raceMeetings",
+    params = {
         "query": RACE_MEETINGS_QUERY,
-        "variables": variables,
+        "variables": json.dumps(variables),
     }
 
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Origin": "https://racing.hkjc.com",
-        "Referer": "https://racing.hkjc.com/",
+        "Origin": "https://bet.hkjc.com",
+        "Referer": "https://bet.hkjc.com/",
+        "User-Agent": "Mozilla/5.0",
     }
 
-    resp = requests.post(GRAPHQL_URL, json=payload, headers=headers, timeout=30)
+    resp = requests.get(GRAPHQL_URL, params=params, headers=headers, timeout=30)
     resp.raise_for_status()
-    return resp.json()
+    data = resp.json()
+    if data.get("errors") and (data.get("data") or {}).get("raceMeetings") is None:
+        messages = "; ".join(e.get("message", "") for e in data["errors"])
+        raise requests.RequestException(f"HKJC GraphQL error: {messages}")
+    return data
 
 
 def main() -> None:
