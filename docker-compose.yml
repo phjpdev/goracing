@@ -54,7 +54,7 @@ services:
         BACKEND_URL: http://backend:8000
         JWT_SECRET_KEY: ${JWT_SECRET_KEY}
         GEMINI_API_KEY: ${GEMINI_API_KEY}
-        GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+        GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
     restart: unless-stopped
     depends_on:
       - backend
@@ -63,7 +63,7 @@ services:
       BACKEND_URL: http://backend:8000
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       REDIS_URL: redis://redis:6379
       DISABLE_MEETINGS_WARMER: ${DISABLE_MEETINGS_WARMER:-0}
     ports:

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
@@ -170,7 +170,14 @@ export async function POST(request: NextRequest) {
 
     const geminiData = await geminiRes.json();
     const finishReason = geminiData?.candidates?.[0]?.finishReason;
-    const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    // Newer (thinking) models can split the answer over several parts and may
+    // include thought parts, so join every non-thought text part.
+    const parts: Array<{ text?: string; thought?: boolean }> =
+      geminiData?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts
+      .filter((p) => !p.thought && typeof p.text === "string")
+      .map((p) => p.text)
+      .join("");
 
     if (!text) {
       console.error("Gemini returned empty response. finishReason:", finishReason);
