@@ -2,7 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+// Comma-separated models to try, in order, when the main model is overloaded,
+// rate limited or retired. e.g. GEMINI_FALLBACK_MODELS=gemini-3.5-flash
+const GEMINI_FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS ?? "")
+  .split(",")
+  .map((m) => m.trim())
+  .filter(Boolean);
+const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS]));
+const GEMINI_ATTEMPTS_PER_MODEL = 2;
+
+function geminiUrl(model: string) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 type RunnerInput = {
@@ -127,39 +140,54 @@ export async function POST(request: NextRequest) {
     let geminiRes: Response | null = null;
     let lastError = "";
 
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        geminiRes = await fetch(GEMINI_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: geminiBody,
-        });
+    // Try the main model, then each fallback. A busy model (429/503) gets a short
+    // retry before moving on; a retired model (404) is skipped straight away.
+    modelLoop: for (const model of GEMINI_MODELS) {
+      for (let attempt = 1; attempt <= GEMINI_ATTEMPTS_PER_MODEL; attempt++) {
+        const isLastAttempt = attempt === GEMINI_ATTEMPTS_PER_MODEL;
+        try {
+          geminiRes = await fetch(geminiUrl(model), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: geminiBody,
+          });
 
-        if (geminiRes.ok) break;
+          if (geminiRes.ok) {
+            if (model !== GEMINI_MODEL) console.log(`[ANALYZE] Used fallback model ${model}`);
+            break modelLoop;
+          }
 
-        const errData = await geminiRes.json().catch(() => null);
-        lastError = errData?.error?.message ?? `HTTP ${geminiRes.status}`;
+          const errData = await geminiRes.json().catch(() => null);
+          lastError = errData?.error?.message ?? `HTTP ${geminiRes.status}`;
 
-        if (lastError.includes("location is not supported")) {
-          return NextResponse.json(
-            { error: "Gemini API is not available in your server's region." },
-            { status: 503 }
-          );
+          if (lastError.includes("location is not supported")) {
+            return NextResponse.json(
+              { error: "Gemini API is not available in your server's region." },
+              { status: 503 }
+            );
+          }
+
+          if (geminiRes.status === 429 || geminiRes.status === 503) {
+            console.log(
+              `[ANALYZE] ${model} busy (HTTP ${geminiRes.status}, attempt ${attempt}/${GEMINI_ATTEMPTS_PER_MODEL}): ${lastError}`
+            );
+            if (!isLastAttempt) await sleep(attempt * 5000);
+            continue;
+          }
+
+          if (geminiRes.status === 404) {
+            console.warn(`[ANALYZE] ${model} unavailable (HTTP 404): ${lastError}`);
+            continue modelLoop;
+          }
+
+          // Bad key, billing, bad request: another model won't help.
+          console.error(`[ANALYZE] ${model} failed (HTTP ${geminiRes.status}): ${lastError}`);
+          break modelLoop;
+        } catch (fetchErr) {
+          lastError = (fetchErr as Error).message;
+          console.error(`[ANALYZE] ${model} fetch error (attempt ${attempt}/${GEMINI_ATTEMPTS_PER_MODEL}):`, lastError);
+          if (!isLastAttempt) await sleep(attempt * 3000);
         }
-
-        // Retry on rate limit (429) or server overload (503)
-        if (geminiRes.status === 429 || geminiRes.status === 503) {
-          console.log(`[ANALYZE] Gemini rate limited (attempt ${attempt + 1}/3), retrying in ${(attempt + 1) * 5}s...`);
-          await new Promise((r) => setTimeout(r, (attempt + 1) * 5000));
-          continue;
-        }
-
-        // Non-retryable error
-        break;
-      } catch (fetchErr) {
-        lastError = (fetchErr as Error).message;
-        console.error(`[ANALYZE] Gemini fetch error (attempt ${attempt + 1}/3):`, lastError);
-        await new Promise((r) => setTimeout(r, (attempt + 1) * 3000));
       }
     }
 

@@ -64,6 +64,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_FALLBACK_MODELS: ${GEMINI_FALLBACK_MODELS:-gemini-3.1-flash-lite,gemini-3.5-flash}
       REDIS_URL: redis://redis:6379
       DISABLE_MEETINGS_WARMER: ${DISABLE_MEETINGS_WARMER:-0}
     ports:
