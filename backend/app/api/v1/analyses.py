@@ -1,6 +1,7 @@
-from typing import Any
+from datetime import datetime
+from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +15,7 @@ from app.schemas.race_analysis import (
     RaceAnalysisResponse,
     RaceAnalysisTop4Update,
 )
+from app.services.analysis_export import HKT, build_last_matches_workbook
 
 router = APIRouter(prefix="/analyses", tags=["analyses"])
 
@@ -87,6 +89,36 @@ async def get_recent_analyses(
         )
 
     return response
+
+
+XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+# Must also be declared BEFORE /{race_id}
+@router.get("/export")
+async def export_analyses(
+    lang: Literal["en", "zh"] = Query("en"),
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """Download every saved race analysis as an Excel workbook (admin only)."""
+    result = await db.execute(
+        select(RaceAnalysis).order_by(
+            RaceAnalysis.race_date.desc(),
+            RaceAnalysis.venue_code.asc(),
+            RaceAnalysis.created_at.asc(),
+        )
+    )
+    content = build_last_matches_workbook(list(result.scalars().all()), lang)
+    filename = f"goracing-last-matches-{datetime.now(HKT):%Y%m%d}.xlsx"
+    return Response(
+        content=content,
+        media_type=XLSX_MEDIA_TYPE,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
 
 
 @router.get("/{race_id}", response_model=RaceAnalysisResponse)

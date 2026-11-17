@@ -60,6 +60,8 @@ export default function LastMatchesPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
 
   const loadPage = useCallback(async (offset: number) => {
     const res = await fetch(`/api/analyses/recent?limit=${PAGE_SIZE}&offset=${offset}`);
@@ -94,6 +96,33 @@ export default function LastMatchesPage() {
       setError("Failed to load");
     } finally {
       setLoadingMore(false);
+    }
+  }
+
+  // Exports every saved meeting (not just the pages loaded on screen).
+  async function handleExport() {
+    setExporting(true);
+    setExportError("");
+    try {
+      const lang = locale === "zh-TW" ? "zh" : "en";
+      const res = await fetch(`/api/analyses/export?lang=${lang}`);
+      if (!res.ok) throw new Error("failed");
+      const blob = await res.blob();
+      const filename =
+        /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ??
+        "goracing-last-matches.xlsx";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setExportError(locale === "zh-TW" ? "匯出失敗，請重試" : "Export failed, please try again");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -143,7 +172,7 @@ export default function LastMatchesPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="font-inter text-2xl sm:text-3xl font-bold text-white">
               {locale === "zh-TW" ? "最近賽事分析" : "Last Matches"}
             </h1>
@@ -151,7 +180,30 @@ export default function LastMatchesPage() {
               {locale === "zh-TW" ? "已保存的賽事 AI 分析結果" : "Saved AI analysis results from past meetings"}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting || loading || meetings.length === 0}
+            title={locale === "zh-TW" ? "匯出所有已保存賽事至 Excel" : "Export all saved meetings to Excel"}
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[#28E88E]/30 bg-[#28E88E]/10 px-3 py-2 text-sm font-medium text-[#28E88E] transition hover:bg-[#28E88E]/20 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
+          >
+            {exporting ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#28E88E]/30 border-t-[#28E88E]" />
+            ) : (
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V4" />
+              </svg>
+            )}
+            <span>
+              <span className="hidden sm:inline">{locale === "zh-TW" ? "匯出 " : "Export "}</span>
+              Excel
+            </span>
+          </button>
         </div>
+
+        {exportError && (
+          <p className="-mt-4 text-right text-sm text-red-400">{exportError}</p>
+        )}
 
         {loading && (
           <div className="flex items-center justify-center gap-3 py-20 text-white/50">
